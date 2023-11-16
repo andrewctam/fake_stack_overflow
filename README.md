@@ -3,6 +3,8 @@ Add design docs in *images/*
 
 ## Instructions to setup and run project
 
+- Run `npm install && npm start` in `/client` and `/server` directories
+
 ## Team Member 1 Contribution
 
 ## Team Member 2 Contribution
