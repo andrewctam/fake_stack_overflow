@@ -5,18 +5,30 @@ import ViewQuestion from './questions/view-question';
 import AskQuestion from './questions/ask-question';
 import AnswerQuestion from './questions/answer-question';
 import Tags from './tags';
+import Welcome from './welcome';
 
 export default function FakeStackOverflow() {
   const [searchStr, setSearchStr] = useState("");
   const [currentQid, setCurrentQid] = useState("");
-  const [page, setPage] = useState("Home");
+  const [page, setPage] = useState("Welcome");
   const [heading, setHeading] = useState(undefined)
   const [incrView, setIncrView] = useState(true);
+
+  const [username, setUsername] = useState("")
 
   const handleSearch = (e) => {
     if (e.key === "Enter") {
       viewHome("Search Results", e.target.value);
     }
+  }
+
+  const login = (username)  => {
+    setUsername(username);
+    setPage("Home");
+  }
+
+  const logout = () => {
+    setPage("Welcome");
   }
 
   const viewHome = (heading = undefined, searchResults = undefined) => {
@@ -43,13 +55,24 @@ export default function FakeStackOverflow() {
     setPage("AnswerQuestion");
   }
 
+  if (page === "Welcome") {
+    return <Welcome login={login} />
+  }
+
   return (
     <>
       <div id="header" className="header">
         <h1 id="fakeStackOverflow" onClick={() => viewHome()}>Fake Stack Overflow</h1>
 
         <input id="search" className="search" type="text" placeholder="Search . . ." onKeyDown={handleSearch} />
+
+        <div className='accountBar'>
+          <button onClick={logout}> Logout </button>
+
+        </div>
       </div>
+
+
 
       <div className="main">
         <div className="menu">

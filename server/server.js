@@ -18,6 +18,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use("/tags", require("./routers/tagsRouter"))
 app.use("/answers", require("./routers/answersRouter"))
 app.use("/questions", require("./routers/questionsRouter"))
+app.use("/users", require("./routers/usersRouter"))
 
 const PORT = 8000;
 const server = app.listen(PORT, () => {

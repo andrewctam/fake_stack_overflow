@@ -300,3 +300,69 @@ button {
 .sortSelected {
   background-color: rgb(170, 227, 232);
 }
+
+
+.accountBar {
+
+}
+
+.accountBar button {
+  padding: 10px;
+  color: black;
+  border: 1px solid black;
+  border-radius: 4px;
+  margin: 4px;
+  background-color: rgb(170, 232, 184);
+}
+
+.welcome {
+  margin-left: auto;
+  margin-right: auto;
+  background-color: rgb(205, 205, 205);
+  padding: 15px 100px;
+  border-radius: 10px;
+}
+
+.welcomeOptions button {
+  width: 400px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+  border-radius: 20px;
+  background-color: rgb(165, 191, 226);
+  color: black;
+  font-size: larger;
+}
+
+.accountForm {
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
+  text-align: center;
+  margin-top: 10px;
+  background-color: rgb(206, 217, 206);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.accountForm div {
+  margin-top: 10px;
+}
+
+.accountForm div input {
+  border-radius: 2px;
+  padding: 2px;
+}
+
+.accountForm button {
+  border-radius: 5px;
+  padding: 10px;
+  background-color: rgb(194, 244, 204);
+  width: fit-content;
+}
+
+.loginError {
+  color: red;
+  display: block;
+}
