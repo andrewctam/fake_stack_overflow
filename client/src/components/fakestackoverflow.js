@@ -68,7 +68,6 @@ export default function FakeStackOverflow() {
 
         <div className='accountBar'>
           <button onClick={logout}> Logout </button>
-
         </div>
       </div>
 
@@ -86,6 +85,7 @@ export default function FakeStackOverflow() {
             searchStr={searchStr}
             viewAskQuestion={viewAskQuestion}
             viewQuestion={viewQuestion}
+            backToWelcome={() => {setPage("Welcome")}}
           />
         }
         {page === "ViewQuestion" &&

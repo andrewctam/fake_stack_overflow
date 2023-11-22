@@ -11,6 +11,7 @@ export default function Welcome(props) {
     const [emailError, setEmailError] = useState("");
 
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [passwordError, setPasswordError] = useState("");
 
     const [error, setError] = useState("")
@@ -20,6 +21,7 @@ export default function Welcome(props) {
         setUsername("")
         setEmail("")
         setPassword("")
+        setConfirmPassword("")
         setUsernameError("")
         setEmailError("")
         setPasswordError("")
@@ -76,6 +78,10 @@ export default function Welcome(props) {
             setPasswordError("Password field is empty");
             error = true;
         }
+        if (password !== confirmPassword) {
+            setPasswordError("Passwords do not match");
+            error = true;
+        }
 
         if (error) return;
 
@@ -114,14 +120,15 @@ export default function Welcome(props) {
 
                 {selected === "login" && (
                     <div className="accountForm">
+                        Login Form
                         <div>
-                            <label>Email:</label> 
+                            <label>Email: </label> 
                             <input value={email} onChange={(e) => setEmail(e.target.value)} />
                             <label className="loginError">{emailError}</label>
                         </div>
 
                         <div>
-                            <label>Password:</label> 
+                            <label>Password: </label> 
                             <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" />
                             <label className="loginError">{passwordError}</label>
                         </div>
@@ -131,27 +138,32 @@ export default function Welcome(props) {
                     </div>
                 )}
 
-                <button onClick={() => setSelected("register")}>
+                <button onClick={() => setSelected("register")} active={selected === "register"}>
                     Register as new User
                 </button>
 
                 {selected === "register" && (
                     <div className="accountForm">
+                        Register Form
                         <div>
-                            <label>Email:</label> 
+                            <label>Email: </label> 
                             <input value={email} onChange={(e) => setEmail(e.target.value)} />
                             <label className="loginError">{emailError}</label>
                         </div>
                         <div>
-                            <label>Username:</label> 
+                            <label>Username: </label> 
                             <input value={username} onChange={(e) => setUsername(e.target.value)} />
                             <label className="loginError">{usernameError}</label>
                         </div>
 
                         <div>
-                            <label>Password:</label> 
+                            <label>Password: </label> 
                             <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" />
                             <label className="loginError">{passwordError}</label>
+                        </div>
+                        <div>
+                            <label>Confirm Password: </label> 
+                            <input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} type="password" />
                         </div>
 
                         <button onClick={registerUser}> Register </button>
@@ -159,7 +171,7 @@ export default function Welcome(props) {
                     </div>
                 )}
 
-                <button>
+                <button onClick={() => login("")}>
                     Continue as Guest
                 </button>
             </div>
