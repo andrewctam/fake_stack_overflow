@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { config, formatAskDate, formatText, s } from "../../utils";
 import axios from "axios";
 import Answer from "./answer";
-import CommentDisplay from "./comment-display";
-import AddComment from "./add-comment";
-import CommentList from "./comment-list";
+import CommentList from "../comments/comment-list";
 
 export default function ViewQuestion(props) {
   const { qid, incrView = true, viewAskQuestion, viewAnswerQuestion, loggedIn } = props;

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { config, formatAskDate, formatText, s } from "../../utils"
 import axios from "axios";
-import CommentList from "./comment-list";
+import CommentList from "../comments/comment-list";
 
 export default function Answer(props) {
     const { aid, text, ans_by, ans_date_time, votes, loggedIn, comments } = props
