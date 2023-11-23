@@ -28,7 +28,7 @@ export default function CommentDisplay(props) {
     }
 
     return (
-        <div className="answer" key={"COMMENT" + commentId}>
+        <div className="answer">
             <div className="answerText">
                 {formatText(text)}
             </div>

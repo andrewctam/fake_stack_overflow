@@ -8,17 +8,30 @@ const { publicKey, verifyOptions } = require("../verify");
 const { default: mongoose } = require("mongoose");
 
 router.post("/create", async (req, res) => {
-    const { qid, ans_by, text } = req.body;
+    const token = req.cookies?.token
+    if (!token || !jwt.verify(token, publicKey, verifyOptions)) {
+        res.status(400).send("Unauthorized");
+        return;
+    }
+    const payload = jwt.decode(token);
 
+    const { qid, text } = req.body;
+
+    let user;
+    if (!payload || !payload.username || !(user = await User.findOne({ username: payload.username }))) {
+        res.status(400).send("User not found")
+        return;
+    }
+    
     const question = await Question.findOne({ _id: qid });
     if (!question) {
-        res.status(404).send("Question not found");
+        res.status(400).send("Question not found");
         return;
     }
 
     const ans = new Answer({
         text,
-        ans_by
+        ans_by: payload.username
     })
 
     await ans.save()

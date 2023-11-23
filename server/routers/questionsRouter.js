@@ -131,7 +131,7 @@ router.get("/q/:id/:incrView?", async (req, res) => {
             votes: q.votes
         })
     } else {
-        res.status(404).send("Question not found")
+        res.status(400).send("Question not found")
     }
 });
 
@@ -214,7 +214,7 @@ router.get("/all/:query?", async (req, res) => {
             }
         }))
     } else {
-        res.status(404).send("No questions found")
+        res.status(400).send("No questions found")
     }
 
 });

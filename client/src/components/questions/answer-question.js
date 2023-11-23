@@ -8,28 +8,22 @@ export default function AnswerQuestion(props) {
 
   const [text, setText] = useState("");
   const [textError, setTextError] = useState("");
-
-  const [username, setUsername] = useState("");
-  const [usernameError, setUsernameError] = useState("");
-
+  const [error, setError] = useState("");
 
   const ansQuestion = async () => {
     let error = false;
     setTextError("");
-    setUsernameError("");
+
 
     if (isEmpty(text)) {
-      setTextError("Answer is empty");
+      setTextError("Text is empty");
       error = true;
     }
     if (!verifyHyperlinks(text)) {
       setTextError("Hyperlink error");
       error = true;
     }
-    if (isEmpty(username)) {
-      setUsernameError("Username is empty");
-      error = true;
-    }
+
 
     if (error) {
       return;
@@ -37,25 +31,20 @@ export default function AnswerQuestion(props) {
 
     const body = {
       qid,
-      text,
-      ans_by: username
+      text
     }
 
     const url = `http://localhost:8000/answers/create`
     await axios.post(url, body, config)
       .then(res => viewQuestion(qid, false))
-      .catch(err => console.log(err));
+      .catch(err => {
+        setError(err?.response?.data)
+        console.log(err)
+      });
   }
 
   return (
     <div className="questionForm">
-      <QuestionInput
-        title="Username*"
-        inputId="answerUsername"
-        errorText={usernameError}
-        inputText={username}
-        setInputText={setUsername}
-      />
       <QuestionInput
         title="Answer Text*"
         inputId="answerText"
@@ -69,6 +58,8 @@ export default function AnswerQuestion(props) {
         <button id="postAns" onClick={ansQuestion}>
           Post Answer
         </button>
+
+        <p className="inputError">{error}</p>
 
         <div className="req">
           * indicates mandatory fields

@@ -25,7 +25,7 @@ router.get('/all', async (req, res) => {
             }
         }));
     else
-        res.status(404).send("No tags found")
+        res.status(400).send("No tags found")
 });
 
 module.exports = router

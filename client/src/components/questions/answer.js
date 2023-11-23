@@ -30,7 +30,7 @@ export default function Answer(props) {
     }
 
     return (
-        <div className="answer" key={"ANSWER" + aid}>
+        <div className="answer">
             <div className="answerText">
                 <div className="ansText">{formatText(text)}</div>
 
@@ -45,9 +45,10 @@ export default function Answer(props) {
             </div>
             <div className="ansBy">
                 <span className="name">{ans_by}</span> answered {formatAskDate(new Date(ans_date_time))}
+                <div>{voteCount} vote{s(voteCount)}</div>
             </div>
 
-            <div>{voteCount} vote{s(voteCount)}</div>
+            
 
             {loggedIn && (<div>
                 <button className="voteBtn" onClick={() => { vote(1) }}> Upvote </button>

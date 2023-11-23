@@ -10,6 +10,7 @@ export default function ViewQuestion(props) {
   const { qid, incrView = true, viewAskQuestion, viewAnswerQuestion, loggedIn } = props;
   const [question, setQuestion] = useState(null);
 
+  const [page, setPage] = useState(0);
   const [voteError, setVoteError] = useState("");
 
   useEffect(() => {
@@ -51,9 +52,9 @@ export default function ViewQuestion(props) {
       })
   }
 
-
+  
   if (!question) return;
-
+  
   const answers = question.answers.sort((a, b) => a.ansDate < b.ansDate ? 1 : -1)
   return (
     <div>
@@ -80,8 +81,9 @@ export default function ViewQuestion(props) {
       </div>
 
       <div className="answersList">
-        {answers.map(a =>
+        {answers.slice(page * 5, (page + 1) * 5).map(a =>
           <Answer
+            key={"ANSWER" + a._id}
             aid={a._id}
             comments={a.comments}
             text={a.text}
@@ -92,6 +94,18 @@ export default function ViewQuestion(props) {
           />
         )}
       </div>
+      
+      {(answers.length > 5) &&
+        (<div className="pageBtns">
+          <button className="pageBtn"
+            disabled={page <= 0}
+            onClick={() => { setPage(page - 1) }}>
+            Prev</button >
+          <button className="pageBtn"
+            disabled={page >= Math.ceil(answers.length / 5) - 1}
+            onClick={() => { setPage(page + 1) }}>
+            Next</button>
+        </div>)}
 
       <CommentList
         comments={question.comments}

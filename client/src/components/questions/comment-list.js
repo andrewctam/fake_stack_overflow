@@ -23,6 +23,7 @@ export default function CommentList(props) {
             <div className="answersList">
                 {allComments.slice((page) * 3, (page + 1) * 3).map(c =>
                     <CommentDisplay
+                        key={"COMMENT" + c._id}
                         commentId={c._id}
                         commenter={c.commenter}
                         text={c.text}
