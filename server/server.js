@@ -26,6 +26,7 @@ app.use(cookieParser());
 app.use("/tags", require("./routers/tagsRouter"))
 app.use("/answers", require("./routers/answersRouter"))
 app.use("/questions", require("./routers/questionsRouter"))
+app.use("/comments", require("./routers/commentsRouter"))
 app.use("/users", require("./routers/usersRouter"))
 
 const PORT = 8000;

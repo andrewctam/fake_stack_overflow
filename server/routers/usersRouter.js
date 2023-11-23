@@ -58,17 +58,17 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-        res.status(401).send("Missing fields");
+        res.status(400).send("Missing fields");
         return;
     }
     const user = await User.findOne({ email: email });
     if (!user) {
-        res.status(401).send("Account with this email was not found");
+        res.status(400).send("Account with this email was not found");
         return;
     }
 
     if (! (await bcrypt.compare(password, user.passwordHash) )) {
-        return res.status(401).send("Password incorrect");
+        return res.status(400).send("Password incorrect");
     }
     
     const token = jwt.sign({ email, username }, privateKey, signOptions);

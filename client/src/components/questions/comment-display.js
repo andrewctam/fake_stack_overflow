@@ -1,20 +1,18 @@
-import { useState } from "react";
-import { config, formatAskDate, formatText, s } from "../../utils"
 import axios from "axios";
-import CommentList from "./comment-list";
+import { config, formatText, s } from "../../utils";
+import { useState } from "react";
 
-export default function Answer(props) {
-    const { aid, text, ans_by, ans_date_time, votes, loggedIn, comments } = props
+export default function CommentDisplay(props) {
+    const { commentId, text, votes, commenter, loggedIn } = props;
 
     const [voteCount, setVoteCount] = useState(votes);
     const [voteError, setVoteError] = useState("");
 
-    const vote = async (num) => {
-        const url = `http://localhost:8000/answers/vote`
+    const vote = async () => {
+        const url = `http://localhost:8000/comments/vote`
 
         const body = {
-            aid,
-            upvote: num > 0
+            commentId
         }
 
         await axios.post(url, body, config)
@@ -30,28 +28,18 @@ export default function Answer(props) {
     }
 
     return (
-        <div className="answer" key={"ANSWER" + aid}>
+        <div className="answer" key={"COMMENT" + commentId}>
             <div className="answerText">
-                <div className="ansText">{formatText(text)}</div>
-
-
-                <CommentList
-                comments={comments}
-                parentType="Answer"
-                loggedIn={loggedIn}
-                id={aid}
-            />
-
+                {formatText(text)}
             </div>
             <div className="ansBy">
-                <span className="name">{ans_by}</span> answered {formatAskDate(new Date(ans_date_time))}
+                <span className="name">{commenter}</span> commented
             </div>
 
             <div>{voteCount} vote{s(voteCount)}</div>
 
             {loggedIn && (<div>
                 <button className="voteBtn" onClick={() => { vote(1) }}> Upvote </button>
-                <button className="voteBtn" onClick={() => { vote(-1) }}> Downvote </button>
                 <div className="inputError">{voteError}</div>
             </div>)}
 

@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { config, formatAskDate, formatText, s } from "../../utils";
 import axios from "axios";
 import Answer from "./answer";
+import CommentDisplay from "./comment-display";
+import AddComment from "./add-comment";
+import CommentList from "./comment-list";
 
 export default function ViewQuestion(props) {
   const { qid, incrView = true, viewAskQuestion, viewAnswerQuestion, loggedIn } = props;
@@ -22,7 +25,7 @@ export default function ViewQuestion(props) {
 
     getQuestion();
   }, [incrView, qid])
-  
+
   const vote = async (num) => {
     const url = `http://localhost:8000/questions/vote`
 
@@ -48,6 +51,7 @@ export default function ViewQuestion(props) {
       })
   }
 
+
   if (!question) return;
 
   const answers = question.answers.sort((a, b) => a.ansDate < b.ansDate ? 1 : -1)
@@ -60,8 +64,8 @@ export default function ViewQuestion(props) {
 
           {loggedIn && <button id="askQ" onClick={viewAskQuestion}> Ask Question </button>}
           {loggedIn && (<div>
-            <button className="voteBtn" onClick={() => {vote(1)}}> Upvote </button>
-            <button className="voteBtn" onClick={() => {vote(-1)}}> Downvote </button>
+            <button className="voteBtn" onClick={() => { vote(1) }}> Upvote </button>
+            <button className="voteBtn" onClick={() => { vote(-1) }}> Downvote </button>
             <div className="inputError">{voteError}</div>
           </div>)}
         </div>
@@ -77,8 +81,9 @@ export default function ViewQuestion(props) {
 
       <div className="answersList">
         {answers.map(a =>
-          <Answer 
+          <Answer
             aid={a._id}
+            comments={a.comments}
             text={a.text}
             ans_date_time={a.ans_date_time}
             ans_by={a.ans_by}
@@ -87,6 +92,13 @@ export default function ViewQuestion(props) {
           />
         )}
       </div>
+
+      <CommentList
+        comments={question.comments}
+        parentType="Question"
+        loggedIn={loggedIn}
+        id={qid}
+      />
 
       <button id="ansQ" onClick={() => viewAnswerQuestion(qid)}> Answer Question </button>
     </div>

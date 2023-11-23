@@ -32,7 +32,7 @@ router.post("/create", async (req, res) => {
 router.post("/vote", async (req, res) => {
     const token = req.cookies?.token
     if (!token || !jwt.verify(token, publicKey, verifyOptions)) {
-        res.status(401).send("Unauthorized");
+        res.status(400).send("Unauthorized");
         return;
     }
     const payload = jwt.decode(token);

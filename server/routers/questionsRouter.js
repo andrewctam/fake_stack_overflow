@@ -1,5 +1,6 @@
 
 const router = require("express").Router();
+const Comment = require("../models/comments");
 const Question = require("../models/questions");
 const User = require("../models/users")
 const Tag = require("../models/tags")
@@ -12,7 +13,7 @@ const { publicKey, verifyOptions } = require("../verify");
 router.post("/create", async (req, res) => {
     const token = req.cookies?.token
     if (!token || !jwt.verify(token, publicKey, verifyOptions)) {
-        res.status(401).send("Unauthorized");
+        res.status(400).send("Unauthorized");
         return;
     }
     const payload = jwt.decode(token);
@@ -47,13 +48,13 @@ router.post("/create", async (req, res) => {
 router.post("/vote", async (req, res) => {
     const token = req.cookies?.token
     if (!token || !jwt.verify(token, publicKey, verifyOptions)) {
-        res.status(401).send("Unauthorized");
+        res.status(400).send("Unauthorized");
         return;
     }
     const payload = jwt.decode(token);
 
     let user;
-    if (!payload || !payload.username || !(user = await User.findOne({username: payload.username}))) {
+    if (!payload || !payload.username || !(user = await User.findOne({ username: payload.username }))) {
         res.status(400).send("User not found")
         return;
     }
@@ -74,7 +75,7 @@ router.post("/vote", async (req, res) => {
         res.status(400).send("Question not found")
         return;
     }
-    const owner = await User.findOne({username: q.asked_by})
+    const owner = await User.findOne({ username: q.asked_by })
     if (!owner) {
         res.status(400).send("Owner not found?")
         return;
@@ -101,8 +102,12 @@ router.get("/q/:id/:incrView?", async (req, res) => {
         return acc;
     }, {})
 
+    const comments = await Comment.find({});
+
     const answers = (await Answer.find({})).reduce((acc, cur) => {
-        acc[cur._id] = cur
+        const obj = cur.toObject();
+        obj.comments = comments.filter((c) => c.parent.equals(cur._id));
+        acc[cur._id] = obj
         return acc;
     }, {})
 
@@ -112,7 +117,7 @@ router.get("/q/:id/:incrView?", async (req, res) => {
     }
 
     if (q) {
-        res.send({
+        res.status(200).send({
             _id: q._id,
             title: q.title,
             summary: q.summary,
@@ -121,6 +126,7 @@ router.get("/q/:id/:incrView?", async (req, res) => {
             asked_by: q.asked_by,
             tags: q.tags.map(t => tags[t]),
             answers: q.answers.map(a => answers[a]),
+            comments: comments.filter((c) => c.parent.equals(q._id)),
             views: q.views,
             votes: q.votes
         })
@@ -149,7 +155,7 @@ router.get("/all/:query?", async (req, res) => {
         while (cur.length > 0) {
             let open = cur.indexOf("[");
             let close = cur.indexOf("]");
-    
+
             if (open === -1 || close === -1) {
                 break;
             } else {
@@ -162,7 +168,7 @@ router.get("/all/:query?", async (req, res) => {
                 }
             }
         }
-    
+
         const keywords = searchStr.split(" ").map(w => w.toLowerCase())
         questions = questions.filter((q) => {
             const titleWords = q.title.split(" ").map(w => w.toLowerCase());
@@ -170,25 +176,25 @@ router.get("/all/:query?", async (req, res) => {
                 if (titleWords.includes(kw))
                     return true;
             }
-    
+
             const textWords = q.text.split(" ").map(w => w.toLowerCase());
             for (const kw of keywords) {
                 if (textWords.includes(kw))
                     return true;
             }
-    
+
             const tagNames = q.tags.map((id) => tags[id])
             for (const name of tagNames) {
                 if (filterTags.includes(name)) {
                     return true;
                 }
             }
-    
+
             return false;
         })
     }
-   
-    
+
+
 
     if (questions) {
         res.send(questions.map(q => {
