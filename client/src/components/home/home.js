@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
-import { s } from "../../utils";
+import { config, s } from "../../utils";
 import HomeQuestion from "./home-question";
 import axios from "axios";
 
 export default function Home(props) {
-  const { searchStr, heading, viewQuestion, viewAskQuestion, backToWelcome } = props;
+  const { searchStr, heading, viewQuestion, viewAskQuestion, backToWelcome, loggedIn } = props;
 
   const [filter, setFilter] = useState("Newest");
   const [questions, setQuestions] = useState([]);
@@ -16,7 +16,7 @@ export default function Home(props) {
     const fetchQuestions = async () => {
       const url = `http://localhost:8000/questions/all/${searchStr}`;
 
-      await axios.get(url)
+      await axios.get(url, config)
         .then((res) => {
           console.log(res)
           setQuestions(res.data)
@@ -83,7 +83,7 @@ export default function Home(props) {
         <div className="questionsInfo">
           <h2>{heading ?? "All Questions"}</h2>
 
-          <button id="askQ" onClick={viewAskQuestion}> Ask Question </button>
+          { loggedIn && <button id="askQ" onClick={viewAskQuestion}> Ask Question </button> }
         </div>
         <div className="questionsInfo">
           <p className="questionCount">{questions.length} question{s(questions.length)}</p>

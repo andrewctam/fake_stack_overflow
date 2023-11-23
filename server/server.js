@@ -11,9 +11,17 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 const express = require('express');
 const app = express();
 const cors = require('cors');
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
+
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
 
 app.use("/tags", require("./routers/tagsRouter"))
 app.use("/answers", require("./routers/answersRouter"))

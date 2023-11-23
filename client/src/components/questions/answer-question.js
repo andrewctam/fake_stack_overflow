@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { isEmpty, verifyHyperlinks } from "../../utils"
+import { config, isEmpty, verifyHyperlinks } from "../../utils"
 import QuestionInput from "./question-input"
 import axios from 'axios'
 
@@ -42,7 +42,7 @@ export default function AnswerQuestion(props) {
     }
 
     const url = `http://localhost:8000/answers/create`
-    await axios.post(url, body)
+    await axios.post(url, body, config)
       .then(res => viewQuestion(qid, false))
       .catch(err => console.log(err));
   }

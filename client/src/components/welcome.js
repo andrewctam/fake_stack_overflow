@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { config } from '../utils';
 
 export default function Welcome(props) {
     const { login } = props;
@@ -27,7 +28,9 @@ export default function Welcome(props) {
         setPasswordError("")
     }, [selected])
 
-    const loginUser = async () => {
+    const loginUser = async (e) => {
+        e.preventDefault();
+        
         let error = false;
         if (!email) {
             setEmailError("Email field is empty")
@@ -46,16 +49,15 @@ export default function Welcome(props) {
             email, password
         }
 
-        await axios.post(url, body)
+        await axios.post(url, body, config)
             .then((res) => {
                 console.log(res)
 
                 if (res.status === 200) {
-                    login(res.username);
+                    login(username);
                 } else {
                     setError(res)
                 }
-
             })
             .catch((err) => {
                 console.log(err)
@@ -63,7 +65,9 @@ export default function Welcome(props) {
             });
     }
 
-    const registerUser = async () => {
+    const registerUser = async (e) => {
+        e.preventDefault();
+
         let error = false;
         if (!email) {
             setEmailError("Email field is empty")
@@ -90,12 +94,12 @@ export default function Welcome(props) {
             username, email, password
         }
 
-        await axios.post(url, body)
+        await axios.post(url, body, config)
             .then((res) => {
                 console.log(res)
 
                 if (res.status === 200) {
-                    login(res.username);
+                    login(username);
                 } else {
                     setError(res)
                 }
@@ -119,7 +123,7 @@ export default function Welcome(props) {
                 </button>
 
                 {selected === "login" && (
-                    <div className="accountForm">
+                    <form className="accountForm" onSubmit={registerUser}>
                         Login Form
                         <div>
                             <label>Email: </label> 
@@ -135,15 +139,15 @@ export default function Welcome(props) {
 
                         <button onClick={loginUser}> Login </button>
                         <label className="loginError">{error}</label>
-                    </div>
+                    </form>
                 )}
 
-                <button onClick={() => setSelected("register")} active={selected === "register"}>
+                <button onClick={() => setSelected("register")}>
                     Register as new User
                 </button>
 
                 {selected === "register" && (
-                    <div className="accountForm">
+                    <form className="accountForm" onSubmit={registerUser}>
                         Register Form
                         <div>
                             <label>Email: </label> 
@@ -168,7 +172,7 @@ export default function Welcome(props) {
 
                         <button onClick={registerUser}> Register </button>
                         <label className="loginError">{error}</label>
-                    </div>
+                    </form>
                 )}
 
                 <button onClick={() => login("")}>

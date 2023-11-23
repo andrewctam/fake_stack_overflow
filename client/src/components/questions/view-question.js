@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { formatAskDate, formatText, s } from "../../utils";
+import { config, formatAskDate, formatText, s } from "../../utils";
 import axios from "axios";
 
 export default function ViewQuestion(props) {
@@ -9,7 +9,7 @@ export default function ViewQuestion(props) {
   useEffect(() => {
     const getQuestion = async () => {
       const url = `http://localhost:8000/questions/q/${qid}/${incrView ? "true" : "false"}`
-      await axios.get(url)
+      await axios.get(url, config)
         .then((res) => setQuestion(res.data))
         .catch((err) => console.log(err));
     }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { isEmpty, verifyHyperlinks } from "../../utils";
+import { config, isEmpty, verifyHyperlinks } from "../../utils";
 import QuestionInput from "./question-input";
 import axios from 'axios'
 
@@ -9,27 +9,37 @@ export default function AskQuestion(props) {
   const [title, setTitle] = useState("");
   const [titleError, setTitleError] = useState("");
 
+  const [summary, setSummary] = useState("");
+  const [summaryError, setSummaryError] = useState("");
+
   const [text, setText] = useState("");
   const [textError, setTextError] = useState("");
 
   const [tags, setTags] = useState("");
   const [tagsError, setTagsError] = useState("");
 
-  const [username, setUsername] = useState("");
-  const [usernameError, setUsernameError] = useState("");
+  const [error, setError] = useState("");
 
   const addQuestion = async () => {
     let error = false;
     setTitleError("");
     setTextError("");
+    setSummaryError("");
     setTagsError("");
-    setUsernameError("");
 
 
     if (isEmpty(title)) {
       setTitleError("Title is empty");
       error = true;
-    } else if (title.length > 100) {
+    } else if (title.length > 50) {
+      setTitleError("Title is too long");
+      error = true;
+    }
+
+    if (isEmpty(summary)) {
+      setTitleError("Title is empty");
+      error = true;
+    } else if (summary.length > 140) {
       setTitleError("Title is too long");
       error = true;
     }
@@ -73,10 +83,6 @@ export default function AskQuestion(props) {
       seen.add(tag)
     }
 
-    if (isEmpty(username)) {
-      setUsernameError("Username is empty");
-      error = true;
-    }
 
     if (error) {
       return;
@@ -86,14 +92,17 @@ export default function AskQuestion(props) {
     const body = {
       title,
       text,
+      summary,
       tags: tagsArr,
-      asked_by: username
     }
     const url = `http://localhost:8000/questions/create`;
 
-    await axios.post(url, body)
+    await axios.post(url, body, config)
       .then(res => viewHome())
-      .catch(err => console.log(err));
+      .catch(err => {
+        setError(err);
+        console.log(err)
+      });
   }
 
   return (
@@ -101,10 +110,18 @@ export default function AskQuestion(props) {
       <QuestionInput
         title="Question Title*"
         inputId="questionTitle"
-        desc="Limit title to 100 characters or less"
+        desc="Limit title to 50 characters or less"
         errorText={titleError}
         inputText={title}
         setInputText={setTitle}
+      />
+      <QuestionInput
+        title="Question Summary*"
+        inputId="questionTitle"
+        desc="Limit summary to 140 characters or less"
+        errorText={summaryError}
+        inputText={summary}
+        setInputText={setSummary}
       />
       <QuestionInput
         title="Question Text*"
@@ -123,14 +140,6 @@ export default function AskQuestion(props) {
         inputText={tags}
         setInputText={setTags}
       />
-      <QuestionInput
-        title="Username*"
-        inputId="questionUsername"
-        errorText={usernameError}
-        inputText={username}
-        setInputText={setUsername}
-      />
-
       <div className="bottom">
         <button id="postQ" onClick={addQuestion}>
           Post Question
@@ -140,6 +149,7 @@ export default function AskQuestion(props) {
           * indicates mandatory fields
         </div>
       </div>
+      <p className="inputError">{error}</p>
     </div>
   )
 }

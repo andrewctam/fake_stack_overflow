@@ -4,9 +4,19 @@ const Question = require("../models/questions");
 const Tag = require("../models/tags")
 const Answer = require("../models/answers");
 const mongoose = require("mongoose");
+const jwt = require('jsonwebtoken');
+
+const { publicKey, verifyOptions } = require("../verify");
 
 router.post("/create", async (req, res) => {
-    const { title, text, tags, asked_by } = req.body
+    const token = req.cookies?.token
+    if (!token || !jwt.verify(token, publicKey, verifyOptions)) {
+        res.status(401).send("Unauthorized");
+        return;
+    }
+    const payload = jwt.decode(token);
+
+    const { title, summary, text, tags } = req.body
 
     const tagIds = []
     for (const tagName of tags) {
@@ -19,11 +29,13 @@ router.post("/create", async (req, res) => {
         tagIds.push(tag._id);
     }
 
+    console.log(payload)
     const q = new Question({
         title,
         text,
+        summary,
         tags: tagIds,
-        asked_by
+        asked_by: payload?.username
     });
 
     await q.save();
@@ -59,6 +71,7 @@ router.get("/q/:id/:incrView?", async (req, res) => {
         res.send({
             _id: q._id,
             title: q.title,
+            summary: q.summary,
             text: q.text,
             ask_date_time: q.ask_date_time,
             asked_by: q.asked_by,
@@ -138,6 +151,7 @@ router.get("/all/:query?", async (req, res) => {
             return {
                 _id: q._id,
                 title: q.title,
+                summary: q.summary,
                 answersCount: q.answers.length,
                 lastAnswerTime: lastAnswerId ? answers[lastAnswerId].ans_date_time : "NONE",
                 text: q.text,

@@ -66,9 +66,11 @@ export default function FakeStackOverflow() {
 
         <input id="search" className="search" type="text" placeholder="Search . . ." onKeyDown={handleSearch} />
 
-        <div className='accountBar'>
-          <button onClick={logout}> Logout </button>
-        </div>
+        {username?.length > 0 && (
+          <div className='accountBar'>
+            <button onClick={logout}> Logout </button>
+          </div> 
+        )}
       </div>
 
 
@@ -86,6 +88,7 @@ export default function FakeStackOverflow() {
             viewAskQuestion={viewAskQuestion}
             viewQuestion={viewQuestion}
             backToWelcome={() => {setPage("Welcome")}}
+            loggedIn={username.length > 0}
           />
         }
         {page === "ViewQuestion" &&

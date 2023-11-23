@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { s } from "../utils";
+import { config, s } from "../utils";
 import axios from "axios"
 
 export default function Tags(props) {
@@ -10,7 +10,7 @@ export default function Tags(props) {
     const getTags = async () => {
       const url = "http://localhost:8000/tags/all";
   
-      await axios.get(url)
+      await axios.get(url, config)
         .then(res => setTags(res.data))
         .catch(err => console.log(err));
     }

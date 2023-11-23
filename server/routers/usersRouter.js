@@ -1,6 +1,8 @@
 const router = require("express").Router();
 const User = require('../models/users')
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { privateKey, signOptions } = require('../verify')
 
 router.post("/register", async (req, res) => {
     const { username, password, email } = req.body;
@@ -45,7 +47,11 @@ router.post("/register", async (req, res) => {
 
     await user.save();
 
-    res.send("Success");
+    const token = jwt.sign({ email, username }, privateKey, signOptions);
+    res.cookie('token', token, {
+        httpOnly: true, sameSite: 'lax'
+    })
+    .status(200).send("Successfully Registered")
 });
 
 router.post("/login", async (req, res) => {
@@ -64,26 +70,12 @@ router.post("/login", async (req, res) => {
     if (! (await bcrypt.compare(password, user.passwordHash) )) {
         return res.status(401).send("Password incorrect");
     }
-
-    res.send("Success")
+    
+    const token = jwt.sign({ email, username }, privateKey, signOptions);
+    res.cookie('token', token, {
+        httpOnly: true, sameSite: 'lax'
+    })
+    .status(200).send("Successfully Registered")
 })
-router.post("/logout", async (req, res) => {
-    const { email, password } = req.body;
 
-    if (!email || !password) {
-        res.status(401).send("Missing fields");
-        return;
-    }
-    const user = await User.findOne({ email: email });
-    if (!user) {
-        res.status(401).send("Account with this email was not found");
-        return;
-    }
-
-    if (! (await bcrypt.compare(password, user.passwordHash) )) {
-        return res.status(401).send("Password incorrect");
-    }
-
-    res.send("Success")
-})
 module.exports = router

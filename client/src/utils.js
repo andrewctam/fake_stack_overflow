@@ -100,3 +100,7 @@ export function formatText(text) {
     return formatted;
 
 }
+
+export const config = { 
+    withCredentials: true
+}
