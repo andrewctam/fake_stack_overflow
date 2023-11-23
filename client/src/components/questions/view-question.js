@@ -1,24 +1,55 @@
 import { useState, useEffect } from "react";
 import { config, formatAskDate, formatText, s } from "../../utils";
 import axios from "axios";
+import Answer from "./answer";
 
 export default function ViewQuestion(props) {
-  const { qid, incrView = true, viewAskQuestion, viewAnswerQuestion } = props;
+  const { qid, incrView = true, viewAskQuestion, viewAnswerQuestion, loggedIn } = props;
   const [question, setQuestion] = useState(null);
+
+  const [voteError, setVoteError] = useState("");
 
   useEffect(() => {
     const getQuestion = async () => {
       const url = `http://localhost:8000/questions/q/${qid}/${incrView ? "true" : "false"}`
       await axios.get(url, config)
-        .then((res) => setQuestion(res.data))
+        .then((res) => {
+          console.log(res)
+          setQuestion(res.data)
+        })
         .catch((err) => console.log(err));
     }
 
     getQuestion();
   }, [incrView, qid])
+  
+  const vote = async (num) => {
+    const url = `http://localhost:8000/questions/vote`
+
+    const body = {
+      qid,
+      upvote: num > 0
+    }
+
+    await axios.post(url, body, config)
+      .then((res) => {
+        console.log(res.data)
+        const q = {
+          ...question,
+          votes: parseInt(res.data)
+        }
+
+        setQuestion(q)
+        setVoteError("")
+      })
+      .catch((err) => {
+        console.log(err)
+        setVoteError(err?.response?.data)
+      })
+  }
 
   if (!question) return;
-  
+
   const answers = question.answers.sort((a, b) => a.ansDate < b.ansDate ? 1 : -1)
   return (
     <div>
@@ -27,10 +58,15 @@ export default function ViewQuestion(props) {
           <div>{question.answers.length} answer{s(question.answers.length)}</div>
           <h2>{question.title}</h2>
 
-          <button id="askQ" onClick={viewAskQuestion}> Ask Question </button>
+          {loggedIn && <button id="askQ" onClick={viewAskQuestion}> Ask Question </button>}
+          {loggedIn && (<div>
+            <button className="voteBtn" onClick={() => {vote(1)}}> Upvote </button>
+            <button className="voteBtn" onClick={() => {vote(-1)}}> Downvote </button>
+            <div className="inputError">{voteError}</div>
+          </div>)}
         </div>
         <div className="questionTopRow">
-          <div>{question.views} view{s(question.views)}</div>
+          <div>{question.views} view{s(question.views)}, {question.votes} vote{s(question.votes)}</div>
           <p>{formatText(question.text)}</p>
 
           <div className="askedBy">
@@ -41,15 +77,14 @@ export default function ViewQuestion(props) {
 
       <div className="answersList">
         {answers.map(a =>
-          <div className="answer" key={"ANSWER" + a._id}>
-            <div className="answerText">
-              {formatText(a.text)}
-            </div>
-            <div className="ansBy">
-              <span className="name">{a.ans_by}</span> answered {formatAskDate(new Date(a.ans_date_time))}
-            </div>
-
-          </div>
+          <Answer 
+            aid={a._id}
+            text={a.text}
+            ans_date_time={a.ans_date_time}
+            ans_by={a.ans_by}
+            votes={a.votes}
+            loggedIn={loggedIn}
+          />
         )}
       </div>
 

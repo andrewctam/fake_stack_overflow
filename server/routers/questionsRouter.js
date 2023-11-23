@@ -1,6 +1,7 @@
 
 const router = require("express").Router();
 const Question = require("../models/questions");
+const User = require("../models/users")
 const Tag = require("../models/tags")
 const Answer = require("../models/answers");
 const mongoose = require("mongoose");
@@ -43,6 +44,49 @@ router.post("/create", async (req, res) => {
     res.send(q._id);
 });
 
+router.post("/vote", async (req, res) => {
+    const token = req.cookies?.token
+    if (!token || !jwt.verify(token, publicKey, verifyOptions)) {
+        res.status(401).send("Unauthorized");
+        return;
+    }
+    const payload = jwt.decode(token);
+
+    let user;
+    if (!payload || !payload.username || !(user = await User.findOne({username: payload.username}))) {
+        res.status(400).send("User not found")
+        return;
+    }
+    if (user.reputation < 50) {
+        res.status(400).send(`Reputation (${user.reputation}) not high enough.`)
+        return;
+    }
+
+    const { qid, upvote } = req.body
+
+    if (!mongoose.isValidObjectId(qid)) {
+        res.status(400).send("Invalid ID")
+        return;
+    }
+
+    const q = await Question.findOne({ _id: new mongoose.Types.ObjectId(qid) })
+    if (!q) {
+        res.status(400).send("Question not found")
+        return;
+    }
+    const owner = await User.findOne({username: q.asked_by})
+    if (!owner) {
+        res.status(400).send("Owner not found?")
+        return;
+    }
+    owner.reputation += upvote ? 5 : -10;
+    await owner.save();
+
+    q.votes += upvote ? 1 : -1;
+    await q.save();
+
+    res.status(200).send(q.votes + "");
+});
 
 router.get("/q/:id/:incrView?", async (req, res) => {
     const id = req.params.id
@@ -77,7 +121,8 @@ router.get("/q/:id/:incrView?", async (req, res) => {
             asked_by: q.asked_by,
             tags: q.tags.map(t => tags[t]),
             answers: q.answers.map(a => answers[a]),
-            views: q.views
+            views: q.views,
+            votes: q.votes
         })
     } else {
         res.status(404).send("Question not found")
@@ -158,7 +203,8 @@ router.get("/all/:query?", async (req, res) => {
                 ask_date_time: q.ask_date_time,
                 asked_by: q.asked_by,
                 tags: q.tags.map(t => tags[t]),
-                views: q.views
+                views: q.views,
+                votes: q.votes
             }
         }))
     } else {

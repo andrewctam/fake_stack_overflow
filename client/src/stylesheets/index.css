@@ -388,3 +388,9 @@ button {
 .errorScreen {
   text-align: center;
 }
+
+.voteBtn {
+  padding: 3px;
+  margin: 1px;
+  width: fit-content;
+}

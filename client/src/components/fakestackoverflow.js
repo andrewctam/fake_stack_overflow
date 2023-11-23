@@ -97,6 +97,7 @@ export default function FakeStackOverflow() {
             viewAskQuestion={viewAskQuestion}
             qid={currentQid}
             incrView={incrView}
+            loggedIn={username.length > 0}
           />
         }
         {page === "AskQuestion" &&
