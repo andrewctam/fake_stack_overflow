@@ -54,10 +54,10 @@ export default function AskQuestion(props) {
     }
 
     if (isEmpty(summary)) {
-      setTitleError("Title is empty");
+      setSummaryError("Summary is empty");
       error = true;
     } else if (summary.length > 140) {
-      setTitleError("Title is too long");
+      setSummaryError("Summary is too long");
       error = true;
     }
 
