@@ -3,7 +3,13 @@ Add design docs in *images/*
 
 ## Instructions to setup and run project
 
-- Run `npm install && npm start` in `/client` and `/server` directories
+
+- Start MongoDB
+- Run `npm install` in `/client`
+- Run `npm start` in `/client`
+- Run `npm install` in `/server`
+- Run `npm start` in `/server`
+
 
 ## Team Member 1 Contribution
 
