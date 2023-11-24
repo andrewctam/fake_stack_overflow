@@ -95,24 +95,33 @@ router.get("/profile/:username", async (req, res) => {
         return;
     }
 
-    const questions = await Question.find({
+    const tags = (await Tag.find({})).reduce((acc, cur) => {
+        acc[cur._id] = cur.name
+        return acc;
+    }, {})
+
+    const questions = (await Question.find({
         asked_by: username
-    })
+    }))
+    .map((q) => ({
+        ...(q.toObject()),
+        tags: q.tags.map(tid => tags[tid])
+    })) 
 
     const qIds = (await Answer.find({ans_by: username}))
         .map(a => a.question);
-
     const questionsAnswered = await Question.find({
         _id: {$in: qIds}
     })
 
-    const tags = await Tag.find({
+    const userTags = await Tag.find({
         creator: username
     })
 
+
     const allQuestions = await Question.find({});
     
-    const counts = tags.reduce((acc, cur) => {
+    const counts = userTags.reduce((acc, cur) => {
         acc[cur._id] = 0
         return acc;
     }, {})
@@ -131,7 +140,7 @@ router.get("/profile/:username", async (req, res) => {
         joinDate: user.join_date,
         questions,
         questionsAnswered,
-        tags: tags.map((t) => {
+        tags: userTags.map((t) => {
             return {
                 _id: t._id,
                 name: t.name,

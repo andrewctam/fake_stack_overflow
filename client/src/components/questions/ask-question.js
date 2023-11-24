@@ -6,7 +6,6 @@ import axios from 'axios'
 export default function AskQuestion(props) {
   const { viewHome, editingInfo } = props;
 
-
   const [title, setTitle] = useState(editingInfo?.title ?? "");
   const [titleError, setTitleError] = useState("");
 
@@ -16,12 +15,29 @@ export default function AskQuestion(props) {
   const [text, setText] = useState(editingInfo?.text ?? "");
   const [textError, setTextError] = useState("");
 
-  const [tags, setTags] = useState(editingInfo?.tags ?? "");
+  const [tags, setTags] = useState(editingInfo?.tags.join(" ") ?? "");
   const [tagsError, setTagsError] = useState("");
 
   const [error, setError] = useState("");
 
+  const deleteQuestion = async () => {
+    if (!editingInfo) return;
+    const body = {
+      qid: editingInfo?._id
+    }
+
+    const url = `http://localhost:8000/questions/delete`;
+
+    await axios.post(url, body, config)
+      .then(res => viewHome())
+      .catch(err => {
+        console.log(err)
+        setError(err?.response?.data);
+      });
+  }
   const addQuestion = async () => {
+    const edit = editingInfo !== undefined;
+
     let error = false;
     setTitleError("");
     setTextError("");
@@ -84,19 +100,18 @@ export default function AskQuestion(props) {
       seen.add(tag)
     }
 
-
     if (error) {
       return;
     }
 
-
     const body = {
+      qid: edit ? editingInfo?._id : undefined,
       title,
       text,
       summary,
       tags: tagsArr,
     }
-    const url = `http://localhost:8000/questions/create`;
+    const url = `http://localhost:8000/questions/${edit ? "edit" : "create"}`;
 
     await axios.post(url, body, config)
       .then(res => viewHome())
@@ -146,7 +161,7 @@ export default function AskQuestion(props) {
           {editingInfo ? "Save Edits" : "Post Question"}
         </button>
         {editingInfo &&
-          <button className="delQ" onClick={addQuestion}>
+          <button className="delQ" onClick={deleteQuestion}>
             Delete Question
           </button>
         }

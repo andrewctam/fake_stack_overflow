@@ -27,8 +27,10 @@ export default function Profile(props) {
         getProfile();
     }, [])
 
+    console.log(userInfo)
     if (!userInfo) return null;
 
+    const sortQuestions = (a, b) => (a.ask_date_time < b.ask_date_time ? 1 : -1) ;
     return (<div className="profile">
         <div className="userStats">
             <div>{username}'s Profile</div>
@@ -38,7 +40,7 @@ export default function Profile(props) {
 
         <h2>Questions Posted by {username}</h2>
         <ul id="questionsList" className="questionsList">
-            {userInfo.questions.map(q =>
+            {userInfo.questions.sort(sortQuestions).map(q =>
                 <li className="profileTitle" key={q._id} onClick={() => { editQuestion(q) }}>
                     {q.title}
                 </li>
@@ -49,7 +51,7 @@ export default function Profile(props) {
 
         <h2>Questions Answered by {username}</h2>
         <ul id="questionsList" className="questionsList">
-            {userInfo.questionsAnswered.map(q =>
+            {userInfo.questionsAnswered.sort(sortQuestions).map(q =>
                 <li className="profileTitle" key={q._id} onClick={() => { viewQuestionUserFirst(q._id, username) }}>
                     {q.text}
                 </li>

@@ -52,6 +52,7 @@ export default function FakeStackOverflow() {
   }
   const editQuestion = (question) => {
     setEditingInfo(question);
+    console.log(question)
     setPage("AskQuestion");
   }
   const viewQuestion = (qid, incrView = true) => {
@@ -100,7 +101,10 @@ export default function FakeStackOverflow() {
         <div className="menu">
           <div id="queLink" onClick={() => viewHome()} className={`menuItem ${page === "Home" ? "curMenuItem" : ""}`}> Questions </div>
           <div id="tagLink" onClick={viewTags} className={`menuItem ${page === "Tags" ? "curMenuItem" : ""}`}> Tags </div>
-          <div id="tagLink" onClick={viewProfile} className={`menuItem ${page === "Profile" ? "curMenuItem" : ""}`}> Profile </div>
+          
+          {username.length > 0 && (
+            <div id="tagLink" onClick={viewProfile} className={`menuItem ${page === "Profile" ? "curMenuItem" : ""}`}> Profile </div>
+          )}
         </div>
 
         {page === "Home" &&

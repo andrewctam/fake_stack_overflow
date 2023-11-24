@@ -41,7 +41,6 @@ router.post("/create", async (req, res) => {
         tagIds.push(tag._id);
     }
 
-    console.log(payload)
     const q = new Question({
         title,
         text,
@@ -52,7 +51,56 @@ router.post("/create", async (req, res) => {
 
     await q.save();
 
-    res.send(q._id);
+    res.status(200).send(q._id);
+});
+
+
+router.post("/edit", async (req, res) => {
+    const token = req.cookies?.token
+    if (!token || !jwt.verify(token, publicKey, verifyOptions)) {
+        res.status(400).send("Unauthorized");
+        return;
+    }
+    const payload = jwt.decode(token);
+
+    const { qid, title, summary, text, tags } = req.body
+
+    let user;
+    if (!payload || !payload.username || !(user = await User.findOne({ username: payload.username }))) {
+        res.status(400).send("User not found")
+        return;
+    }
+
+    const question = await Question.findOne({ _id: qid });
+    if (!question) {
+        res.status(400).send("Question not found")
+        return;
+    }
+
+    question.title = title;
+    question.summary = summary;
+    question.text = text;
+
+    const tagIds = []
+    for (const tagName of tags) {
+        let tag = await Tag.findOne({ name: tagName });
+        if (!tag) {
+            if (user.reputation < 50) {
+                res.status(400).send(`Reputation (${user.reputation}) is not high enough to create a new tag '${tagName}'`)
+                return;
+            }
+            tag = new Tag({ name: tagName, creator: user.username });
+            await tag.save();
+        }
+
+        tagIds.push(tag._id);
+    }
+
+    question.tags = tagIds;
+
+    await question.save();
+
+    res.status(200).send("Success");
 });
 
 router.post("/vote", async (req, res) => {
@@ -227,6 +275,50 @@ router.get("/all/:query?", async (req, res) => {
         res.status(400).send("No questions found")
     }
 
+});
+
+
+
+router.post("/delete", async (req, res) => {
+    const token = req.cookies?.token
+    if (!token || !jwt.verify(token, publicKey, verifyOptions)) {
+        res.status(400).send("Unauthorized");
+        return;
+    }
+    const payload = jwt.decode(token);
+
+    if (!payload || !payload.username || !(await User.findOne({ username: payload.username }))) {
+        res.status(400).send("User not found")
+        return;
+    }
+
+    const { qid } = req.body
+
+    if (!mongoose.isValidObjectId(qid)) {
+        res.status(400).send("Invalid ID")
+        return;
+    }
+
+    const q = await Question.findOne({ _id: new mongoose.Types.ObjectId(qid) })
+    if (!q) {
+        res.status(400).send("Question not found")
+        return;
+    }
+
+    if (q.asked_by !== payload.username) {
+        res.status(400).send("User does not own this question")
+        return;
+    }
+
+    const aDelRes = await Answer.deleteMany({ question: q._id })
+    const cDelRes = await Comment.deleteMany({ parent: q._id })
+    const qDelRes = await Question.deleteOne({ _id: q._id })
+
+    console.log(aDelRes)
+    console.log(cDelRes)
+    console.log(qDelRes)
+
+    res.status(200).send("Deleted")
 });
 
 

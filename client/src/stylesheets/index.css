@@ -292,6 +292,9 @@ button {
   cursor: pointer;
 }
 
+#postQ {
+  cursor: pointer;
+}
 
 .inputError {
   color: red;
