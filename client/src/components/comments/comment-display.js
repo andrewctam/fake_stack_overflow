@@ -36,7 +36,7 @@ export default function CommentDisplay(props) {
                 <span className="name">{commenter}</span> commented
             </div>
 
-            <div>{voteCount} vote{s(voteCount)}</div>
+            <div>{voteCount} upvote{s(voteCount)}</div>
 
             {loggedIn && (<div>
                 <button className="voteBtn" onClick={() => { vote(1) }}> Upvote </button>

@@ -5,7 +5,7 @@ const User = require("../models/users")
 const Question = require("../models/questions")
 const jwt = require('jsonwebtoken');
 const { publicKey, verifyOptions } = require("../verify");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 
 router.post("/create", async (req, res) => {
     const token = req.cookies?.token
@@ -18,7 +18,9 @@ router.post("/create", async (req, res) => {
     const { qid, text } = req.body;
 
     let user;
-    if (!payload || !payload.username || !(user = await User.findOne({ username: payload.username }))) {
+    if (!payload || !payload.userId || !mongoose.isValidObjectId(payload.userId)
+        || !(user = await User.findOne({ _id: new mongoose.Types.ObjectId(payload.userId) }))) {
+
         res.status(400).send("User not found")
         return;
     }
@@ -32,7 +34,7 @@ router.post("/create", async (req, res) => {
     const ans = new Answer({
         question: qid,
         text,
-        ans_by: payload.username
+        ans_by: user._id
     })
 
     await ans.save()
@@ -52,7 +54,9 @@ router.post("/vote", async (req, res) => {
     const payload = jwt.decode(token);
 
     let user;
-    if (!payload || !payload.username || !(user = await User.findOne({username: payload.username}))) {
+    if (!payload || !payload.userId || !mongoose.isValidObjectId(payload.userId)
+        || !(user = await User.findOne({ _id: new mongoose.Types.ObjectId(payload.userId) }))) {
+
         res.status(400).send("User not found")
         return;
     }
@@ -73,13 +77,11 @@ router.post("/vote", async (req, res) => {
         res.status(400).send("Question not found")
         return;
     }
-    const owner = await User.findOne({username: ans.ans_by})
-    if (!owner) {
-        res.status(400).send("Owner not found?")
-        return;
+    const owner = await User.findOne({_id: ans.ans_by})
+    if (owner) {
+        owner.reputation += upvote ? 5 : -10;
+        await owner.save();
     }
-    owner.reputation += upvote ? 5 : -10;
-    await owner.save();
 
     ans.votes += upvote ? 1 : -1;
     await ans.save();

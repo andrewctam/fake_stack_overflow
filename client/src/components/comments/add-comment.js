@@ -13,7 +13,7 @@ export default function AddComment(props) {
         setTextError("");
 
         if (isEmpty(text)) {
-            setTextError("Answer is empty");
+            setTextError("Text is empty");
             return;
         }
 

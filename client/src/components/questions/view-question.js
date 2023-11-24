@@ -82,7 +82,7 @@ export default function ViewQuestion(props) {
           </div>)}
         </div>
         <div className="questionTopRow">
-          <div>{question.views} view{s(question.views)}, {question.votes} vote{s(question.votes)}</div>
+          <div>{question.views} view{s(question.views)}, {question.votes} upvote{s(question.votes)}</div>
           <p>{formatText(question.text)}</p>
 
           <div className="askedBy">

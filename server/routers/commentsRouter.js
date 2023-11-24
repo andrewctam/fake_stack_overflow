@@ -9,7 +9,12 @@ const { publicKey, verifyOptions } = require("../verify");
 
 router.get('/:parent', async (req, res) => {
     const parent = req.params.parent;
-    const comments = await Comment.find({ parent })
+    if (!mongoose.isValidObjectId(parent)) {
+        res.status(400).send("Invalid parent id");
+        return;
+    }
+
+    const comments = await Comment.find({ parent: new mongoose.Types.ObjectId(parent) });
     res.status(200).send(comments);
 });
 
@@ -32,24 +37,26 @@ router.post('/create', async (req, res) => {
         res.status(400).send("Text too long");
         return;
     }
-
     let user;
-    if (!payload || !payload.username || !(user = await User.findOne({username: payload.username}))) {
+    if (!payload || !payload.userId || !mongoose.isValidObjectId(payload.userId)
+        || !(user = await User.findOne({ _id: new mongoose.Types.ObjectId(payload.userId) }))) {
+
         res.status(400).send("User not found")
         return;
     }
+
     if (user.reputation < 50) {
         res.status(400).send(`Reputation (${user.reputation}) not high enough.`)
         return;
     }
 
     if (parentType === "Answer") {
-        if (!(await Answer.findOne({_id: parent}))) {
+        if (!(await Answer.findOne({ _id: parent }))) {
             res.status(400).send("Answer not found")
             return;
         }
     } else if (parentType === "Question") {
-        if (!(await Question.findOne({_id: parent}))) {
+        if (!(await Question.findOne({ _id: parent }))) {
             res.status(400).send("Question not found")
             return;
         }
@@ -59,12 +66,15 @@ router.post('/create', async (req, res) => {
     }
 
     const comment = new Comment({
-        parent, text, commenter: payload.username
+        parent, text, commenter: user._id
     })
 
     await comment.save();
 
-    res.status(200).send(comment);
+    const c = comment.toObject();
+    c.commenter = user.username;
+
+    res.status(200).send(c);
 
 });
 
@@ -78,7 +88,9 @@ router.post("/vote", async (req, res) => {
     const payload = jwt.decode(token);
 
     let user;
-    if (!payload || !payload.username || !(user = await User.findOne({username: payload.username}))) {
+    if (!payload || !payload.userId || !mongoose.isValidObjectId(payload.userId)
+        || !(user = await User.findOne({ _id: new mongoose.Types.ObjectId(payload.userId) }))) {
+
         res.status(400).send("User not found")
         return;
     }

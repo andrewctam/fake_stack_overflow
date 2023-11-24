@@ -5,9 +5,9 @@ import ProfileTag from "./profile-tag";
 import UserItem from "./user-item";
 
 export default function Profile(props) {
-    const { username, editQuestion, viewQuestionUserFirst, viewHome } = props;
+    const { uid, editQuestion, viewQuestionUserFirst, viewHome } = props;
 
-    const [user, setUser] = useState(username);
+    const [user, setUser] = useState(uid);
     const [userInfo, setUserInfo] = useState(null);
     const [error, setError] = useState("")
 
@@ -29,13 +29,13 @@ export default function Profile(props) {
         getProfile();
     }, [user])
 
-    if (error) return <div>{error}</div>
+    if (error) return <div className="inputError pfError">{error}</div>
     if (!userInfo) return null;
 
     const sortQuestions = (a, b) => (a.ask_date_time < b.ask_date_time ? 1 : -1);
     return (<div className="profile">
         <div className="userStats">
-            <div>{user}'s Profile</div>
+            <div>{userInfo.username}'s Profile</div>
             <div>Reputation: {userInfo.reputation}</div>
             <div>Member Since: {formatAskDate(new Date(userInfo.joinDate))}</div>
         </div>
@@ -45,7 +45,8 @@ export default function Profile(props) {
             <ul>
                 {userInfo.users.map((user) => (
                     <UserItem
-                        username={user}
+                        username={user.username}
+                        uid={user.userId}
                         setUser={setUser}
                     />
                 ))}
@@ -53,7 +54,7 @@ export default function Profile(props) {
                 {userInfo.users.length === 0 && <div>No Users</div>}
             </ul>
         </>) : (<>
-            <h2>Questions Posted by {user}</h2>
+            <h2>Questions Posted</h2>
             <ul id="questionsList" className="questionsList">
                 {userInfo.questions.sort(sortQuestions).map(q =>
                     <li className="profileTitle" key={q._id} onClick={() => { editQuestion(q) }}>
@@ -64,7 +65,7 @@ export default function Profile(props) {
                 {userInfo.questions.length === 0 && <div>No Questions Posted</div>}
             </ul>
 
-            <h2>Questions Answered by {user}</h2>
+            <h2>Questions Answered</h2>
             <ul id="questionsList" className="questionsList">
                 {userInfo.questionsAnswered.sort(sortQuestions).map(q =>
                     <li className="profileTitle" key={q._id} onClick={() => { viewQuestionUserFirst(q._id, user) }}>
@@ -75,7 +76,7 @@ export default function Profile(props) {
                 {userInfo.questionsAnswered.length === 0 && <div>No Questions Answered</div>}
             </ul>
 
-            <h2>Tags Created by {user}</h2>
+            <h2>Tags Created</h2>
             <div className="tags">
                 {userInfo.tags.map(t =>
                     <ProfileTag

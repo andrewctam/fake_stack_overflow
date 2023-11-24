@@ -122,7 +122,11 @@ export default function AskQuestion(props) {
   }
 
   return (
+    
     <div className="questionForm">
+      <div>
+        <h2>{editingInfo ? "Edit Question" : "Ask Question"}</h2>
+      </div>
       <QuestionInput
         title="Question Title*"
         inputId="questionTitle"

@@ -15,11 +15,13 @@ export default function CommentList(props) {
         ]);
     }
 
-    const allComments = newComments.concat(comments);
+    const allComments = newComments.concat(comments).sort(
+        (a, b) => a.comment_date < b.comment_date ? 1 : -1
+    );
 
     return (
         <div className="comments">
-            <h2>Comments</h2>
+            <h2>{parentType} Comments</h2>
             <div className="answersList">
                 {allComments.slice((page) * 3, (page + 1) * 3).map(c =>
                     <CommentDisplay
@@ -44,11 +46,12 @@ export default function CommentList(props) {
                             Next</button>
                     </div>)}
 
-                <AddComment
-                    parent={id}
-                    parentType={parentType}
-                    addCommentLocal={addCommentLocal}
-                />
+                {loggedIn &&
+                    <AddComment
+                        parent={id}
+                        parentType={parentType}
+                        addCommentLocal={addCommentLocal}
+                    />}
             </div>
         </div>)
 

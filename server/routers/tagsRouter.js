@@ -4,6 +4,8 @@ const Question = require('../models/questions');
 const jwt = require('jsonwebtoken');
 const { publicKey, verifyOptions } = require("../verify");
 const User = require("../models/users")
+const mongoose = require("mongoose");
+
 
 router.get('/all', async (req, res) => {
     const tags = await Tag.find({});
@@ -40,7 +42,8 @@ router.post("/edit", async (req, res) => {
     const payload = jwt.decode(token);
 
     const { tid, newName } = req.body
-    if (!tid || !newName || !payload || !payload.username) {
+    
+    if (!tid || !newName || !payload ||!payload.userId || !mongoose.isValidObjectId(payload.userId)) {
         res.status(400).send("Missing params");
         return;
     }
@@ -50,8 +53,9 @@ router.post("/edit", async (req, res) => {
         return;
     }
 
-    const user = await User.findOne({username: payload.username})
-    if (!user || (tag.creator !== user.username && !user.isAdmin)) {
+    const user = await User.findOne({_id: new mongoose.Types.ObjectId(payload.userId)})
+
+    if (!user || (!tag.creator.equals(user._id) && !user.isAdmin)) {
         res.status(400).send("Not the tag creator");
         return;
     }
@@ -60,7 +64,7 @@ router.post("/edit", async (req, res) => {
         tags: tid
     })
 
-    if (questionsInUse.some((e) => { return e.asked_by !== tag.creator})) {
+    if (questionsInUse.some((e) => !e.asked_by.equals(tag.creator))) {
         res.status(400).send("Tag in use by other users");
         return;
     }
@@ -82,7 +86,7 @@ router.post("/delete", async (req, res) => {
     const payload = jwt.decode(token);
 
     const { tid } = req.body
-    if (!tid || !payload || !payload.username ) {
+    if (!tid || !payload || !payload.userId || !mongoose.isValidObjectId(payload.userId)) {
         console.log(req.body)
         res.status(400).send("Missing params");
         return;
@@ -94,9 +98,9 @@ router.post("/delete", async (req, res) => {
         return;
     }
 
-    const user = await User.findOne({username: payload.username})
+    const user = await User.findOne({_id: new mongoose.Types.ObjectId(payload.userId)})
 
-    if (!user || (tag.creator !== user.username && !user.isAdmin)) {
+    if (!user || (!tag.creator.equals(user._id) && !user.isAdmin)) {
         res.status(400).send("Not the tag creator");
         return;
     }
@@ -104,8 +108,7 @@ router.post("/delete", async (req, res) => {
     const questionsInUse = await Question.find({
         tags: tid
     })
-
-    if (questionsInUse.some((e) => { return e.asked_by !== tag.creator})) {
+    if (questionsInUse.some((e) => !e.asked_by.equals(tag.creator))) {
         res.status(400).send("Tag in use by other users");
         return;
     }

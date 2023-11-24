@@ -15,7 +15,7 @@ export default function FakeStackOverflow() {
   const [heading, setHeading] = useState(undefined)
   const [incrView, setIncrView] = useState(true);
 
-  const [username, setUsername] = useState("")
+  const [uid, setUid] = useState("")
 
   const [editingInfo, setEditingInfo] = useState(undefined);
   const [userFirst, setUserFirst] = useState(undefined);
@@ -27,8 +27,8 @@ export default function FakeStackOverflow() {
     }
   }
 
-  const login = (username) => {
-    setUsername(username);
+  const login = (uid) => {
+    setUid(uid);
     setPage("Home");
   }
 
@@ -81,7 +81,7 @@ export default function FakeStackOverflow() {
     return <Welcome login={login} />
   }
 
-  const loggedIn = username.length > 0;
+  const loggedIn = uid.length > 0;
   return (
     <>
       <div id="header" className="header">
@@ -89,18 +89,18 @@ export default function FakeStackOverflow() {
 
         <input id="search" className="search" type="text" placeholder="Search . . ." onKeyDown={handleSearch} />
 
-        {username?.length > 0 && (
-          <div className='accountBar'>
-            <button onClick={logout}> Logout </button>
-          </div>
-        )}
+        <div className='accountBar'>
+          <button onClick={logout}>
+            {loggedIn ? "Logout" : "Back to Welcome"}
+          </button>
+        </div>
       </div>
 
       <div className="main">
         <div className="menu">
           <div id="queLink" onClick={() => viewHome()} className={`menuItem ${page === "Home" ? "curMenuItem" : ""}`}> Questions </div>
           <div id="tagLink" onClick={viewTags} className={`menuItem ${page === "Tags" ? "curMenuItem" : ""}`}> Tags </div>
-          
+
           {loggedIn && (
             <div id="tagLink" onClick={viewProfile} className={`menuItem ${page === "Profile" ? "curMenuItem" : ""}`}> Profile </div>
           )}
@@ -148,7 +148,7 @@ export default function FakeStackOverflow() {
 
         {page === "Profile" &&
           <Profile
-            username={username}
+            uid={uid}
             viewQuestion={viewQuestion}
             editQuestion={editQuestion}
             viewQuestionUserFirst={viewQuestionUserFirst}

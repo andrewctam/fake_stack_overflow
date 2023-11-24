@@ -41,12 +41,12 @@ export default function Home(props) {
 
     if (filter === "Active") {
       sorted = sorted.sort((a, b) => {
-        if (a.answersCount === 0 && b.answersCount === 0) {
+        if (a.answers.length === 0 && b.answers.length === 0) {
           return a.answers < b.answers ? 1 : -1
         }
 
-        if (a.answersCount === 0) return 1;
-        if (b.answersCount === 0) return -1;
+        if (a.answers.length === 0) return 1;
+        if (b.answers.length === 0) return -1;
 
 
         const aRecent = new Date(a.lastAnswerTime);
@@ -60,7 +60,7 @@ export default function Home(props) {
       })
     } else {
       if (filter === "Unanswered") {
-        sorted = sorted.filter((q) => q.answersCount === 0)
+        sorted = sorted.filter((q) => q.answers.length === 0)
       }
 
       sorted.sort((a, b) => a.ask_date_time < b.ask_date_time ? 1 : -1)

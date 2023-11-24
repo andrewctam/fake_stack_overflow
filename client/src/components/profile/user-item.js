@@ -3,7 +3,7 @@ import { config } from "../../utils";
 import axios from "axios";
 
 export default function UserItem(props) {
-    const { username, setUser } = props;
+    const { username, setUser, uid } = props;
 
 
 
@@ -14,7 +14,7 @@ export default function UserItem(props) {
     const deleteUser = async () => {
         const url = `http://localhost:8000/users/delete`;
         const body = {
-            username
+            userIdDelete: uid
         }
 
         await axios.post(url, body, config)
@@ -33,7 +33,7 @@ export default function UserItem(props) {
     }
     return (
         <li className="userItem">
-            <span onClick={() => setUser(username)}>{username}</span>
+            <span onClick={() => setUser(uid)}>{username}</span>
 
             <div onClick={() => { setShowConfirm(!showConfirm) }}
                 className={`delUser ${showConfirm ? "cancel" : "inputError"}`}>

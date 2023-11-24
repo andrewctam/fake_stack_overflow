@@ -33,6 +33,7 @@ export default function Answer(props) {
         <div className="answer">
             <div className="answerText">
                 <div className="ansText">{formatText(text)}</div>
+
                 <CommentList
                     comments={comments}
                     parentType="Answer"
@@ -43,17 +44,13 @@ export default function Answer(props) {
             </div>
             <div className="ansBy">
                 <span className="name">{ans_by}</span> answered {formatAskDate(new Date(ans_date_time))}
-                <div>{voteCount} vote{s(voteCount)}</div>
+                <div>{voteCount} upvote{s(voteCount)}</div>
+                {loggedIn && (<div>
+                    <button className="voteBtn" onClick={() => { vote(1) }}> Upvote </button>
+                    <button className="voteBtn" onClick={() => { vote(-1) }}> Downvote </button>
+                    <div className="inputError">{voteError}</div>
+                </div>)}
             </div>
-
-
-
-            {loggedIn && (<div>
-                <button className="voteBtn" onClick={() => { vote(1) }}> Upvote </button>
-                <button className="voteBtn" onClick={() => { vote(-1) }}> Downvote </button>
-                <div className="inputError">{voteError}</div>
-            </div>)}
-
         </div>
     )
 }

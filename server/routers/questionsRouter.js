@@ -20,7 +20,9 @@ router.post("/create", async (req, res) => {
     const { title, summary, text, tags } = req.body
 
     let user;
-    if (!payload || !payload.username || !(user = await User.findOne({ username: payload.username }))) {
+    if (!payload || !payload.userId || !mongoose.isValidObjectId(payload.userId)
+        || !(user = await User.findOne({ _id: new mongoose.Types.ObjectId(payload.userId) }))) {
+
         res.status(400).send("User not found")
         return;
     }
@@ -34,7 +36,7 @@ router.post("/create", async (req, res) => {
                 res.status(400).send(`Reputation (${user.reputation}) is not high enough to create a new tag '${tagName}'`)
                 return;
             }
-            tag = new Tag({ name: tagName, creator: user.username });
+            tag = new Tag({ name: tagName, creator: user._id });
             await tag.save();
         }
 
@@ -46,7 +48,7 @@ router.post("/create", async (req, res) => {
         text,
         summary,
         tags: tagIds,
-        asked_by: payload?.username
+        asked_by: user._id
     });
 
     await q.save();
@@ -66,7 +68,9 @@ router.post("/edit", async (req, res) => {
     const { qid, title, summary, text, tags } = req.body
 
     let user;
-    if (!payload || !payload.username || !(user = await User.findOne({ username: payload.username }))) {
+    if (!payload || !payload.userId || !mongoose.isValidObjectId(payload.userId)
+        || !(user = await User.findOne({ _id: new mongoose.Types.ObjectId(payload.userId) }))) {
+
         res.status(400).send("User not found")
         return;
     }
@@ -77,7 +81,7 @@ router.post("/edit", async (req, res) => {
         return;
     }
 
-    if (question.asked_by !== user.username && !user.isAdmin) {
+    if (!question.asked_by.equals(user._id) && !user.isAdmin) {
         res.status(400).send("User does not own this question")
         return;
     }
@@ -118,10 +122,13 @@ router.post("/vote", async (req, res) => {
     const payload = jwt.decode(token);
 
     let user;
-    if (!payload || !payload.username || !(user = await User.findOne({ username: payload.username }))) {
+    if (!payload || !payload.userId || !mongoose.isValidObjectId(payload.userId)
+        || !(user = await User.findOne({ _id: new mongoose.Types.ObjectId(payload.userId) }))) {
+
         res.status(400).send("User not found")
         return;
     }
+
     if (user.reputation < 50) {
         res.status(400).send(`Reputation (${user.reputation}) not high enough.`)
         return;
@@ -139,13 +146,11 @@ router.post("/vote", async (req, res) => {
         res.status(400).send("Question not found")
         return;
     }
-    const owner = await User.findOne({ username: q.asked_by })
-    if (!owner) {
-        res.status(400).send("Owner not found?")
-        return;
+    const owner = await User.findOne({ _id: q.asked_by })
+    if (owner) {
+        owner.reputation += upvote ? 5 : -10;
+        await owner.save();
     }
-    owner.reputation += upvote ? 5 : -10;
-    await owner.save();
 
     q.votes += upvote ? 1 : -1;
     await q.save();
@@ -168,17 +173,45 @@ router.get("/q/:id/:incrView?", async (req, res) => {
 
     const comments = await Comment.find({});
 
+    const users = (await User.find({})).reduce((acc, cur) => {
+        acc[cur._id] = cur
+        return acc;
+    }, {})
+
     const answers = (await Answer.find({})).reduce((acc, cur) => {
         const obj = cur.toObject();
         obj.comments = comments.filter((c) => c.parent.equals(cur._id));
+        obj.ans_by = users[obj.ans_by]?.username ?? "Deleted User";
         acc[cur._id] = obj
         return acc;
     }, {})
+
 
     if (req.params.incrView === "true") {
         q.views++;
         await q.save();
     }
+
+    const qComments = comments
+        .filter((c) => c.parent.equals(q._id))
+        .map(c => {
+            const obj = c.toObject();
+
+            obj.commenter = users[obj.commenter]?.username ?? "Deleted User";
+            return obj;
+        });
+
+    const qAnswers = q.answers.map(a => {
+        const ans = answers[a]
+        ans.comments = ans.comments.map(c => {
+            const obj = c.toObject();
+
+            obj.commenter = users[obj.commenter]?.username ?? "Deleted User";
+            return obj;
+        });
+
+        return ans;
+    });
 
     if (q) {
         res.status(200).send({
@@ -187,10 +220,10 @@ router.get("/q/:id/:incrView?", async (req, res) => {
             summary: q.summary,
             text: q.text,
             ask_date_time: q.ask_date_time,
-            asked_by: q.asked_by,
+            asked_by: users[q.asked_by]?.username ?? "Deleted User",
             tags: q.tags.map(t => tags[t]),
-            answers: q.answers.map(a => answers[a]),
-            comments: comments.filter((c) => c.parent.equals(q._id)),
+            answers: qAnswers,
+            comments: qComments,
             views: q.views,
             votes: q.votes
         })
@@ -208,8 +241,15 @@ router.get("/all/:query?", async (req, res) => {
         return acc;
     }, {})
 
-    const answers = (await Answer.find({})).reduce((acc, cur) => {
+    const users = (await User.find({})).reduce((acc, cur) => {
         acc[cur._id] = cur
+        return acc;
+    }, {})
+
+    const answers = (await Answer.find({})).reduce((acc, cur) => {
+        const obj = cur.toObject();
+        obj.ans_by = users[obj.ans_by]?.username ?? "Deleted User"
+        acc[obj._id] = obj
         return acc;
     }, {})
 
@@ -259,7 +299,6 @@ router.get("/all/:query?", async (req, res) => {
     }
 
 
-
     if (questions) {
         res.send(questions.map(q => {
             const lastAnswerId = q.answers.length === 0 ? undefined : q.answers[q.answers.length - 1];
@@ -271,7 +310,7 @@ router.get("/all/:query?", async (req, res) => {
                 lastAnswerTime: lastAnswerId ? answers[lastAnswerId].ans_date_time : "NONE",
                 text: q.text,
                 ask_date_time: q.ask_date_time,
-                asked_by: q.asked_by,
+                asked_by: users[q.asked_by]?.username ?? "Deleted User",
                 tags: q.tags.map(t => tags[t]),
                 views: q.views,
                 votes: q.votes
@@ -294,7 +333,9 @@ router.post("/delete", async (req, res) => {
     const payload = jwt.decode(token);
 
     let user;
-    if (!payload || !payload.username || !(user = await User.findOne({ username: payload.username }))) {
+    if (!payload || !payload.userId || !mongoose.isValidObjectId(payload.userId)
+        || !(user = await User.findOne({ _id: new mongoose.Types.ObjectId(payload.userId) }))) {
+
         res.status(400).send("User not found")
         return;
     }
@@ -313,7 +354,7 @@ router.post("/delete", async (req, res) => {
     }
 
 
-    if (q.asked_by !== user.username && !user.isAdmin) {
+    if (!q.asked_by.equals(user._id) && !user.isAdmin) {
         res.status(400).send("User does not own this question")
         return;
     }

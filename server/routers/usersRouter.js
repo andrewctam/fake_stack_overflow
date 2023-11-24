@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const Question = require("../models/questions");
 const Answer = require("../models/answers");
 const Tag = require("../models/tags");
+const mongoose = require("mongoose");
 const { privateKey, signOptions, publicKey, verifyOptions } = require('../verify');
 
 router.post("/register", async (req, res) => {
@@ -50,11 +51,11 @@ router.post("/register", async (req, res) => {
 
     await user.save();
 
-    const token = jwt.sign({ email, username }, privateKey, signOptions);
+    const token = jwt.sign({ email, username, userId: user._id }, privateKey, signOptions);
     res.cookie('token', token, {
         httpOnly: true, sameSite: 'lax'
     })
-        .status(200).send(user.username)
+        .status(200).send(user._id)
 });
 
 
@@ -75,23 +76,44 @@ router.post("/login", async (req, res) => {
         return res.status(400).send("Password incorrect");
     }
 
-    const token = jwt.sign({ email, username: user.username }, privateKey, signOptions);
+    const token = jwt.sign({ email, username: user.username, userId: user._id }, privateKey, signOptions);
     res.cookie('token', token, {
         httpOnly: true, sameSite: 'lax'
     })
-        .status(200).send(user.username)
+        .status(200).send(user._id)
 })
 
-router.get("/profile/:username", async (req, res) => {
-    const username = req.params.username;
-
-    if (!username) {
-        res.status(400).send("Missing username")
+router.get("/profile/:userId", async (req, res) => {
+    const token = req.cookies?.token
+    if (!token || !jwt.verify(token, publicKey, verifyOptions)) {
+        res.status(400).send("Unauthorized");
+        return;
     }
+    const payload = jwt.decode(token);
+    let user;
+    if (!payload || !payload.userId || !mongoose.isValidObjectId(payload.userId)
+        || !(user = await User.findOne({ _id: new mongoose.Types.ObjectId(payload.userId) }))) {
 
-    const user = await User.findOne({ username: username });
-    if (!user) {
-        res.status(400).send("Account with this username was not found");
+        res.status(400).send("User not found")
+        return;
+    }
+    if (!req.params.userId || !mongoose.isValidObjectId(req.params.userId)) {
+        res.status(400).send("Invalid userId");
+        return;
+    }
+    const pfUserId = new mongoose.Types.ObjectId(req.params.userId);
+
+    if (user.isAdmin) {
+        // user is not the profile in question
+        user = await User.findOne({ _id: pfUserId });
+
+        if (!user) {
+            res.status(400).send("User not found");
+            return;
+        }
+
+    } else if (!user._id.equals(pfUserId)) {
+        res.status(400).send("Unauthorized");
         return;
     }
 
@@ -102,7 +124,10 @@ router.get("/profile/:username", async (req, res) => {
             reputation: user.reputation,
             joinDate: user.join_date,
             isAdmin: true,
-            users: users.map(u => u.username),
+            users: users.map(u => ({
+                username: u.username,
+                userId: u._id
+            })),
         });
         return;
     }
@@ -113,21 +138,21 @@ router.get("/profile/:username", async (req, res) => {
     }, {})
 
     const questions = (await Question.find({
-        asked_by: username
+        asked_by: user._id
     }))
         .map((q) => ({
             ...(q.toObject()),
             tags: q.tags.map(tid => tags[tid])
         }))
 
-    const qIds = (await Answer.find({ ans_by: username }))
+    const qIds = (await Answer.find({ ans_by: user._id }))
         .map(a => a.question);
     const questionsAnswered = await Question.find({
         _id: { $in: qIds }
     })
 
     const userTags = await Tag.find({
-        creator: username
+        creator: user._id
     })
 
 
@@ -173,21 +198,21 @@ router.post("/delete", async (req, res) => {
     }
     const payload = jwt.decode(token);
 
-    const { username } = req.body;
+    const { userIdDelete } = req.body;
 
-    if (!username || !payload || !payload.username) {
+    if (!userIdDelete || !payload || !payload.userId || !mongoose.isValidObjectId(userIdDelete) || !mongoose.isValidObjectId(payload.userId)) {
         res.status(400).send("Missing params");
         return;
     }
 
-    const user = await User.findOne({ username: payload.username });
+    const user = await User.findOne({ _id: new mongoose.Types.ObjectId(payload.userId) });
 
     if (!user || !user.isAdmin) {
         res.status(400).send("User not authorized");
         return;
     }
 
-    await User.deleteOne({ username });
+    await User.deleteOne({ _id: userIdDelete });
     res.status(200).send("Specified user deleted");
 })
 
