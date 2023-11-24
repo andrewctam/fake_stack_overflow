@@ -3,6 +3,7 @@ const Tag = require('../models/tags');
 const Question = require('../models/questions');
 const jwt = require('jsonwebtoken');
 const { publicKey, verifyOptions } = require("../verify");
+const User = require("../models/users")
 
 router.get('/all', async (req, res) => {
     const tags = await Tag.find({});
@@ -39,8 +40,7 @@ router.post("/edit", async (req, res) => {
     const payload = jwt.decode(token);
 
     const { tid, newName } = req.body
-    if (!tid || !newName) {
-        console.log(req.body)
+    if (!tid || !newName || !payload || !payload.username) {
         res.status(400).send("Missing params");
         return;
     }
@@ -50,7 +50,8 @@ router.post("/edit", async (req, res) => {
         return;
     }
 
-    if (!payload || !payload.username || tag.creator !== payload.username) {
+    const user = await User.findOne({username: payload.username})
+    if (!user || (tag.creator !== user.username && !user.isAdmin)) {
         res.status(400).send("Not the tag creator");
         return;
     }
@@ -59,7 +60,7 @@ router.post("/edit", async (req, res) => {
         tags: tid
     })
 
-    if (questionsInUse.some((e) => { return e.asked_by !== payload.username})) {
+    if (questionsInUse.some((e) => { return e.asked_by !== tag.creator})) {
         res.status(400).send("Tag in use by other users");
         return;
     }
@@ -81,18 +82,21 @@ router.post("/delete", async (req, res) => {
     const payload = jwt.decode(token);
 
     const { tid } = req.body
-    if (!tid) {
+    if (!tid || !payload || !payload.username ) {
         console.log(req.body)
-        res.status(400).send("Missing tag id");
+        res.status(400).send("Missing params");
         return;
     }
+
     const tag = await Tag.findOne({ _id: tid });
     if (!tag) {
         res.status(400).send("Tag not found");
         return;
     }
 
-    if (!payload || !payload.username || tag.creator !== payload.username) {
+    const user = await User.findOne({username: payload.username})
+
+    if (!user || (tag.creator !== user.username && !user.isAdmin)) {
         res.status(400).send("Not the tag creator");
         return;
     }
@@ -101,7 +105,7 @@ router.post("/delete", async (req, res) => {
         tags: tid
     })
 
-    if (questionsInUse.some((e) => { return e.asked_by !== payload.username})) {
+    if (questionsInUse.some((e) => { return e.asked_by !== tag.creator})) {
         res.status(400).send("Tag in use by other users");
         return;
     }

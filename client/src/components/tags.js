@@ -3,7 +3,7 @@ import { config, s } from "../utils";
 import axios from "axios"
 
 export default function Tags(props) {
-  const { viewHome, viewAskQuestion } = props;
+  const { viewHome, viewAskQuestion, loggedIn } = props;
   const [tags, setTags] = useState(null);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function Tags(props) {
       <div className="tagsTop">
         <div>{tags.length} tag{s(tags.length)}</div>
         <div> All Tags </div>
-        <button id="askQ" onClick={viewAskQuestion}> Ask Question </button>
+        { loggedIn ? <button id="askQ" onClick={viewAskQuestion}> Ask Question </button> : <div />}
       </div>
 
 

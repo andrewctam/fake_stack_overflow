@@ -33,14 +33,12 @@ export default function Answer(props) {
         <div className="answer">
             <div className="answerText">
                 <div className="ansText">{formatText(text)}</div>
-
-
                 <CommentList
-                comments={comments}
-                parentType="Answer"
-                loggedIn={loggedIn}
-                id={aid}
-            />
+                    comments={comments}
+                    parentType="Answer"
+                    loggedIn={loggedIn}
+                    id={aid}
+                />
 
             </div>
             <div className="ansBy">
@@ -48,7 +46,7 @@ export default function Answer(props) {
                 <div>{voteCount} vote{s(voteCount)}</div>
             </div>
 
-            
+
 
             {loggedIn && (<div>
                 <button className="voteBtn" onClick={() => { vote(1) }}> Upvote </button>

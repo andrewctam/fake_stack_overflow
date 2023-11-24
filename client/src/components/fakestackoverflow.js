@@ -96,8 +96,6 @@ export default function FakeStackOverflow() {
         )}
       </div>
 
-
-
       <div className="main">
         <div className="menu">
           <div id="queLink" onClick={() => viewHome()} className={`menuItem ${page === "Home" ? "curMenuItem" : ""}`}> Questions </div>
@@ -144,6 +142,7 @@ export default function FakeStackOverflow() {
           <Tags
             viewHome={viewHome}
             viewAskQuestion={viewAskQuestion}
+            loggedIn={loggedIn}
           />
         }
 
