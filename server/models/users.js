@@ -7,7 +7,9 @@ const UserSchema = new Schema({
     passwordHash: { type: String, required: true },
     email: { type: String, required: true },
     join_date: { type: Date, default: Date.now },
-    reputation: { type: Number, default: 100 }
+    reputation: { type: Number, default: 0 },
+    isAdmin: { type: Boolean, default: false }
+
 });
 
 

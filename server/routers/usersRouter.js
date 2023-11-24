@@ -2,7 +2,10 @@ const router = require("express").Router();
 const User = require('../models/users')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { privateKey, signOptions } = require('../verify')
+const { privateKey, signOptions } = require('../verify');
+const Question = require("../models/questions");
+const Answer = require("../models/answers");
+const Tag = require("../models/tags");
 
 router.post("/register", async (req, res) => {
     const { username, password, email } = req.body;
@@ -76,6 +79,67 @@ router.post("/login", async (req, res) => {
         httpOnly: true, sameSite: 'lax'
     })
     .status(200).send("Successfully Registered")
+})
+
+router.get("/profile/:username", async (req, res) => {
+    
+    const username = req.params.username;
+
+    if (!username) {
+        res.status(400).send("Missing username")
+    }
+
+    const user = await User.findOne({ username: username });
+    if (!user) {
+        res.status(400).send("Account with this username was not found");
+        return;
+    }
+
+    const questions = await Question.find({
+        asked_by: username
+    })
+
+    const qIds = (await Answer.find({ans_by: username}))
+        .map(a => a.question);
+
+    const questionsAnswered = await Question.find({
+        _id: {$in: qIds}
+    })
+
+    const tags = await Tag.find({
+        creator: username
+    })
+
+    const allQuestions = await Question.find({});
+    
+    const counts = tags.reduce((acc, cur) => {
+        acc[cur._id] = 0
+        return acc;
+    }, {})
+
+    allQuestions.forEach((q) => {
+        q.tags.forEach((tagId) => {
+            if (tagId in counts)
+                counts[tagId]++;
+        })
+    })
+
+
+    res.status(200).send({
+        username: user.username,
+        reputation: user.reputation,
+        joinDate: user.join_date,
+        questions,
+        questionsAnswered,
+        tags: tags.map((t) => {
+            return {
+                _id: t._id,
+                name: t.name,
+                creator: t.creator,
+                count: counts[t._id]
+            }
+        })
+    })
 })
 
 module.exports = router

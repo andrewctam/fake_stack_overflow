@@ -4,18 +4,19 @@ import QuestionInput from "./question-input";
 import axios from 'axios'
 
 export default function AskQuestion(props) {
-  const { viewHome } = props;
-  
-  const [title, setTitle] = useState("");
+  const { viewHome, editingInfo } = props;
+
+
+  const [title, setTitle] = useState(editingInfo?.title ?? "");
   const [titleError, setTitleError] = useState("");
 
-  const [summary, setSummary] = useState("");
+  const [summary, setSummary] = useState(editingInfo?.summary ?? "");
   const [summaryError, setSummaryError] = useState("");
 
-  const [text, setText] = useState("");
+  const [text, setText] = useState(editingInfo?.text ?? "");
   const [textError, setTextError] = useState("");
 
-  const [tags, setTags] = useState("");
+  const [tags, setTags] = useState(editingInfo?.tags ?? "");
   const [tagsError, setTagsError] = useState("");
 
   const [error, setError] = useState("");
@@ -100,8 +101,8 @@ export default function AskQuestion(props) {
     await axios.post(url, body, config)
       .then(res => viewHome())
       .catch(err => {
-        setError(err);
         console.log(err)
+        setError(err?.response?.data);
       });
   }
 
@@ -142,8 +143,13 @@ export default function AskQuestion(props) {
       />
       <div className="bottom">
         <button id="postQ" onClick={addQuestion}>
-          Post Question
+          {editingInfo ? "Save Edits" : "Post Question"}
         </button>
+        {editingInfo &&
+          <button className="delQ" onClick={addQuestion}>
+            Delete Question
+          </button>
+        }
 
         <div className="req">
           * indicates mandatory fields

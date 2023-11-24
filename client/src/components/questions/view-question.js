@@ -5,7 +5,7 @@ import Answer from "./answer";
 import CommentList from "../comments/comment-list";
 
 export default function ViewQuestion(props) {
-  const { qid, incrView = true, viewAskQuestion, viewAnswerQuestion, loggedIn } = props;
+  const { qid, incrView = true, viewAskQuestion, viewAnswerQuestion, loggedIn, userFirst } = props;
   const [question, setQuestion] = useState(null);
 
   const [page, setPage] = useState(0);
@@ -53,7 +53,20 @@ export default function ViewQuestion(props) {
   
   if (!question) return;
   
-  const answers = question.answers.sort((a, b) => a.ansDate < b.ansDate ? 1 : -1)
+  const answers = question.answers.sort((a, b) => {
+    if (userFirst !== undefined) {
+      if (a.ans_by === userFirst && b.ans_by !== userFirst)
+        return -1
+      
+      if (b.ans_by === userFirst && a.ans_by !== userFirst)
+        return 1
+    } 
+
+    return a.ans_date_time < b.ans_date_time ? 1 : -1
+  })
+
+  console.log(answers)
+
   return (
     <div>
       <div className="questionTop">

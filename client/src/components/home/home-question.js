@@ -7,7 +7,7 @@ export default function HomeQuestion(props) {
   return (
     <div className="question">
       <div className="stats">
-        <div> {`${q.answersCount} answer${s(q.answersCount)}`}</div>
+        <div> {`${q.answers.length} answer${s(q.answers.length)}`}</div>
         <div> {`${q.views} view${s(q.views)}`} </div>
       </div>
 

@@ -7,7 +7,6 @@ const Tag = require("../models/tags")
 const Answer = require("../models/answers");
 const mongoose = require("mongoose");
 const jwt = require('jsonwebtoken');
-
 const { publicKey, verifyOptions } = require("../verify");
 
 router.post("/create", async (req, res) => {
@@ -20,11 +19,22 @@ router.post("/create", async (req, res) => {
 
     const { title, summary, text, tags } = req.body
 
+    let user;
+    if (!payload || !payload.username || !(user = await User.findOne({ username: payload.username }))) {
+        res.status(400).send("User not found")
+        return;
+    }
+
+
     const tagIds = []
     for (const tagName of tags) {
         let tag = await Tag.findOne({ name: tagName });
         if (!tag) {
-            tag = new Tag({ name: tagName });
+            if (user.reputation < 50) {
+                res.status(400).send(`Reputation (${user.reputation}) is not high enough to create a new tag '${tagName}'`)
+                return;
+            }
+            tag = new Tag({ name: tagName, creator: user.username });
             await tag.save();
         }
 
@@ -203,7 +213,7 @@ router.get("/all/:query?", async (req, res) => {
                 _id: q._id,
                 title: q.title,
                 summary: q.summary,
-                answersCount: q.answers.length,
+                answers: q.answers,
                 lastAnswerTime: lastAnswerId ? answers[lastAnswerId].ans_date_time : "NONE",
                 text: q.text,
                 ask_date_time: q.ask_date_time,

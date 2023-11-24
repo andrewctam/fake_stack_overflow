@@ -30,6 +30,7 @@ router.post("/create", async (req, res) => {
     }
 
     const ans = new Answer({
+        question: qid,
         text,
         ans_by: payload.username
     })

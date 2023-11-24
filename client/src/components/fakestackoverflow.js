@@ -6,6 +6,7 @@ import AskQuestion from './questions/ask-question';
 import AnswerQuestion from './questions/answer-question';
 import Tags from './tags';
 import Welcome from './welcome';
+import Profile from './profile/profile';
 
 export default function FakeStackOverflow() {
   const [searchStr, setSearchStr] = useState("");
@@ -16,13 +17,17 @@ export default function FakeStackOverflow() {
 
   const [username, setUsername] = useState("")
 
+  const [editingInfo, setEditingInfo] = useState(undefined);
+  const [userFirst, setUserFirst] = useState(undefined);
+
+
   const handleSearch = (e) => {
     if (e.key === "Enter") {
       viewHome("Search Results", e.target.value);
     }
   }
 
-  const login = (username)  => {
+  const login = (username) => {
     setUsername(username);
     setPage("Home");
   }
@@ -41,13 +46,29 @@ export default function FakeStackOverflow() {
     setCurrentQid("");
     setPage("Tags");
   }
+  const viewProfile = () => {
+    setCurrentQid("");
+    setPage("Profile");
+  }
+  const editQuestion = (question) => {
+    setEditingInfo(question);
+    setPage("AskQuestion");
+  }
   const viewQuestion = (qid, incrView = true) => {
     setCurrentQid(qid);
+    setUserFirst(undefined);
+    setPage("ViewQuestion")
+    setIncrView(incrView)
+  }
+  const viewQuestionUserFirst = (qid, user, incrView = true) => {
+    setCurrentQid(qid);
+    setUserFirst(user);
     setPage("ViewQuestion")
     setIncrView(incrView)
   }
   const viewAskQuestion = () => {
     setCurrentQid("");
+    setEditingInfo(undefined);
     setPage("AskQuestion");
   }
   const viewAnswerQuestion = (qid) => {
@@ -69,7 +90,7 @@ export default function FakeStackOverflow() {
         {username?.length > 0 && (
           <div className='accountBar'>
             <button onClick={logout}> Logout </button>
-          </div> 
+          </div>
         )}
       </div>
 
@@ -79,6 +100,7 @@ export default function FakeStackOverflow() {
         <div className="menu">
           <div id="queLink" onClick={() => viewHome()} className={`menuItem ${page === "Home" ? "curMenuItem" : ""}`}> Questions </div>
           <div id="tagLink" onClick={viewTags} className={`menuItem ${page === "Tags" ? "curMenuItem" : ""}`}> Tags </div>
+          <div id="tagLink" onClick={viewProfile} className={`menuItem ${page === "Profile" ? "curMenuItem" : ""}`}> Profile </div>
         </div>
 
         {page === "Home" &&
@@ -87,7 +109,7 @@ export default function FakeStackOverflow() {
             searchStr={searchStr}
             viewAskQuestion={viewAskQuestion}
             viewQuestion={viewQuestion}
-            backToWelcome={() => {setPage("Welcome")}}
+            backToWelcome={() => { setPage("Welcome") }}
             loggedIn={username.length > 0}
           />
         }
@@ -98,10 +120,12 @@ export default function FakeStackOverflow() {
             qid={currentQid}
             incrView={incrView}
             loggedIn={username.length > 0}
+            userFirst={userFirst}
           />
         }
         {page === "AskQuestion" &&
           <AskQuestion
+            editingInfo={editingInfo}
             viewHome={viewHome}
           />
         }
@@ -115,6 +139,16 @@ export default function FakeStackOverflow() {
           <Tags
             viewHome={viewHome}
             viewAskQuestion={viewAskQuestion}
+          />
+        }
+
+        {page === "Profile" &&
+          <Profile
+            username={username}
+            viewQuestion={viewQuestion}
+            editQuestion={editQuestion}
+            viewQuestionUserFirst={viewQuestionUserFirst}
+            viewHome={viewHome}
           />
         }
       </div>

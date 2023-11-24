@@ -424,3 +424,44 @@ button {
   text-align: center; 
   font-size: medium;
 }
+
+
+.profile {
+  margin: 20px;
+}
+.userStats div {
+  font-size: large;
+}
+.profile h2 {
+  font-size: larger;
+  margin-top: 20px;
+}
+
+.delQ {
+  background-color: rgb(224, 105, 105);
+}
+
+
+.profileTitle {
+  color: blue;
+  cursor: pointer;
+}
+
+.delTag {
+  color: rgb(220, 135, 135);
+  cursor: pointer;
+}
+
+.editTag {
+  color: rgb(188, 206, 151);
+  cursor: pointer;
+}
+.editTagSave {
+  color: rgb(151, 173, 206);
+  cursor: pointer;
+}
+
+
+.tagEditInput {
+  width: 80%;
+}
