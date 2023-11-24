@@ -409,6 +409,7 @@ button {
 
 .addComment textarea {
   width: 100%;
+  resize: none;
 }
 
 .addComment button {
@@ -445,7 +446,7 @@ button {
 }
 
 
-.profileTitle {
+.profileTitle, .userItem span {
   color: blue;
   cursor: pointer;
 }
@@ -467,4 +468,23 @@ button {
 
 .tagEditInput {
   width: 80%;
+}
+
+.delUser {
+  border: 1px solid black;
+  border-radius: 2px;
+  width: fit-content;
+  padding: 2px;
+  cursor: pointer;
+  margin: 20px 2px;
+}
+.cancel {
+  color: green
+}
+.userItem {
+  border: 1px solid black;
+  border-radius: 4px;
+  width: fit-content;
+  padding: 5px;
+  margin: 10px;
 }

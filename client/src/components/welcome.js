@@ -54,7 +54,7 @@ export default function Welcome(props) {
                 console.log(res)
 
                 if (res.status === 200) {
-                    login(username);
+                    login(res?.data);
                 } else {
                     setError(res)
                 }

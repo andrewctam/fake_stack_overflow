@@ -2,10 +2,10 @@ const router = require("express").Router();
 const User = require('../models/users')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { privateKey, signOptions } = require('../verify');
 const Question = require("../models/questions");
 const Answer = require("../models/answers");
 const Tag = require("../models/tags");
+const { privateKey, signOptions, publicKey, verifyOptions } = require('../verify');
 
 router.post("/register", async (req, res) => {
     const { username, password, email } = req.body;
@@ -54,8 +54,9 @@ router.post("/register", async (req, res) => {
     res.cookie('token', token, {
         httpOnly: true, sameSite: 'lax'
     })
-    .status(200).send("Successfully Registered")
+        .status(200).send(user.username)
 });
+
 
 router.post("/login", async (req, res) => {
     const { email, password } = req.body;
@@ -70,19 +71,18 @@ router.post("/login", async (req, res) => {
         return;
     }
 
-    if (! (await bcrypt.compare(password, user.passwordHash) )) {
+    if (!(await bcrypt.compare(password, user.passwordHash))) {
         return res.status(400).send("Password incorrect");
     }
-    
-    const token = jwt.sign({ email, username }, privateKey, signOptions);
+
+    const token = jwt.sign({ email, username: user.username }, privateKey, signOptions);
     res.cookie('token', token, {
         httpOnly: true, sameSite: 'lax'
     })
-    .status(200).send("Successfully Registered")
+        .status(200).send(user.username)
 })
 
 router.get("/profile/:username", async (req, res) => {
-    
     const username = req.params.username;
 
     if (!username) {
@@ -95,6 +95,18 @@ router.get("/profile/:username", async (req, res) => {
         return;
     }
 
+    if (user.isAdmin) {
+        const users = await User.find({});
+        res.status(200).send({
+            username: user.username,
+            reputation: user.reputation,
+            joinDate: user.join_date,
+            isAdmin: true,
+            users: users.map(u => u.username),
+        });
+        return;
+    }
+
     const tags = (await Tag.find({})).reduce((acc, cur) => {
         acc[cur._id] = cur.name
         return acc;
@@ -103,15 +115,15 @@ router.get("/profile/:username", async (req, res) => {
     const questions = (await Question.find({
         asked_by: username
     }))
-    .map((q) => ({
-        ...(q.toObject()),
-        tags: q.tags.map(tid => tags[tid])
-    })) 
+        .map((q) => ({
+            ...(q.toObject()),
+            tags: q.tags.map(tid => tags[tid])
+        }))
 
-    const qIds = (await Answer.find({ans_by: username}))
+    const qIds = (await Answer.find({ ans_by: username }))
         .map(a => a.question);
     const questionsAnswered = await Question.find({
-        _id: {$in: qIds}
+        _id: { $in: qIds }
     })
 
     const userTags = await Tag.find({
@@ -120,7 +132,7 @@ router.get("/profile/:username", async (req, res) => {
 
 
     const allQuestions = await Question.find({});
-    
+
     const counts = userTags.reduce((acc, cur) => {
         acc[cur._id] = 0
         return acc;
@@ -135,6 +147,7 @@ router.get("/profile/:username", async (req, res) => {
 
 
     res.status(200).send({
+        isAdmin: false,
         username: user.username,
         reputation: user.reputation,
         joinDate: user.join_date,
@@ -149,6 +162,33 @@ router.get("/profile/:username", async (req, res) => {
             }
         })
     })
+})
+
+
+router.post("/delete", async (req, res) => {
+    const token = req.cookies?.token
+    if (!token || !jwt.verify(token, publicKey, verifyOptions)) {
+        res.status(400).send("Unauthorized");
+        return;
+    }
+    const payload = jwt.decode(token);
+
+    const { username } = req.body;
+
+    if (!username || !payload || !payload.username) {
+        res.status(400).send("Missing params");
+        return;
+    }
+
+    const user = await User.findOne({ username: payload.username });
+
+    if (!user || !user.isAdmin) {
+        res.status(400).send("User not authorized");
+        return;
+    }
+
+    await User.deleteOne({ username });
+    res.status(200).send("Specified user deleted");
 })
 
 module.exports = router

@@ -8,6 +8,8 @@ Add design docs in *images/*
 - Run `npm install` in `/client`
 - Run `npm start` in `/client`
 - Run `npm install` in `/server`
+- Create a new Admin user by running `node ./server/init.js <admin_username> <admin_password>`
+    - The email will be <admin_username>@fakeso.com
 - Run `npm start` in `/server`
 
 

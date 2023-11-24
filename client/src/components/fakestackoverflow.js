@@ -81,6 +81,7 @@ export default function FakeStackOverflow() {
     return <Welcome login={login} />
   }
 
+  const loggedIn = username.length > 0;
   return (
     <>
       <div id="header" className="header">
@@ -102,7 +103,7 @@ export default function FakeStackOverflow() {
           <div id="queLink" onClick={() => viewHome()} className={`menuItem ${page === "Home" ? "curMenuItem" : ""}`}> Questions </div>
           <div id="tagLink" onClick={viewTags} className={`menuItem ${page === "Tags" ? "curMenuItem" : ""}`}> Tags </div>
           
-          {username.length > 0 && (
+          {loggedIn && (
             <div id="tagLink" onClick={viewProfile} className={`menuItem ${page === "Profile" ? "curMenuItem" : ""}`}> Profile </div>
           )}
         </div>
@@ -114,7 +115,7 @@ export default function FakeStackOverflow() {
             viewAskQuestion={viewAskQuestion}
             viewQuestion={viewQuestion}
             backToWelcome={() => { setPage("Welcome") }}
-            loggedIn={username.length > 0}
+            loggedIn={loggedIn}
           />
         }
         {page === "ViewQuestion" &&
@@ -123,7 +124,7 @@ export default function FakeStackOverflow() {
             viewAskQuestion={viewAskQuestion}
             qid={currentQid}
             incrView={incrView}
-            loggedIn={username.length > 0}
+            loggedIn={loggedIn}
             userFirst={userFirst}
           />
         }

@@ -1,17 +1,19 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { config, formatAskDate, s } from "../../utils";
+import { config, formatAskDate } from "../../utils";
 import ProfileTag from "./profile-tag";
+import UserItem from "./user-item";
 
 export default function Profile(props) {
     const { username, editQuestion, viewQuestionUserFirst, viewHome } = props;
 
+    const [user, setUser] = useState(username);
     const [userInfo, setUserInfo] = useState(null);
     const [error, setError] = useState("")
 
     useEffect(() => {
         const getProfile = async () => {
-            const url = `http://localhost:8000/users/profile/${username}`;
+            const url = `http://localhost:8000/users/profile/${user}`;
 
             await axios.get(url, config)
                 .then((res) => {
@@ -25,53 +27,68 @@ export default function Profile(props) {
         }
 
         getProfile();
-    }, [])
+    }, [user])
 
-    console.log(userInfo)
+    if (error) return <div>{error}</div>
     if (!userInfo) return null;
 
-    const sortQuestions = (a, b) => (a.ask_date_time < b.ask_date_time ? 1 : -1) ;
+    const sortQuestions = (a, b) => (a.ask_date_time < b.ask_date_time ? 1 : -1);
     return (<div className="profile">
         <div className="userStats">
-            <div>{username}'s Profile</div>
+            <div>{user}'s Profile</div>
             <div>Reputation: {userInfo.reputation}</div>
             <div>Member Since: {formatAskDate(new Date(userInfo.joinDate))}</div>
         </div>
 
-        <h2>Questions Posted by {username}</h2>
-        <ul id="questionsList" className="questionsList">
-            {userInfo.questions.sort(sortQuestions).map(q =>
-                <li className="profileTitle" key={q._id} onClick={() => { editQuestion(q) }}>
-                    {q.title}
-                </li>
-            )}
+        {userInfo.isAdmin ? (<>
+            <h2>Users List</h2>
+            <ul>
+                {userInfo.users.map((user) => (
+                    <UserItem
+                        username={user}
+                        setUser={setUser}
+                    />
+                ))}
 
-            {userInfo.questions.length === 0 && <div>No Questions Posted</div>}
-        </ul>
+                {userInfo.users.length === 0 && <div>No Users</div>}
+            </ul>
+        </>) : (<>
+            <h2>Questions Posted by {user}</h2>
+            <ul id="questionsList" className="questionsList">
+                {userInfo.questions.sort(sortQuestions).map(q =>
+                    <li className="profileTitle" key={q._id} onClick={() => { editQuestion(q) }}>
+                        {q.title}
+                    </li>
+                )}
 
-        <h2>Questions Answered by {username}</h2>
-        <ul id="questionsList" className="questionsList">
-            {userInfo.questionsAnswered.sort(sortQuestions).map(q =>
-                <li className="profileTitle" key={q._id} onClick={() => { viewQuestionUserFirst(q._id, username) }}>
-                    {q.text}
-                </li>
-            )}
+                {userInfo.questions.length === 0 && <div>No Questions Posted</div>}
+            </ul>
 
-            {userInfo.questionsAnswered.length === 0 && <div>No Questions Answered</div>}
-        </ul>
+            <h2>Questions Answered by {user}</h2>
+            <ul id="questionsList" className="questionsList">
+                {userInfo.questionsAnswered.sort(sortQuestions).map(q =>
+                    <li className="profileTitle" key={q._id} onClick={() => { viewQuestionUserFirst(q._id, user) }}>
+                        {q.text}
+                    </li>
+                )}
 
-        <h2>Tags Created by {username}</h2>
-        <div className="tags">
-            {userInfo.tags.map(t =>
-                <ProfileTag
-                    key={t._id}
-                    tid={t._id}
-                    name={t.name}
-                    count={t.count}
-                    viewHome={viewHome}
-                />)}
-        </div>
-        {userInfo.tags.length === 0 && <ul><div>No Tags Created</div></ul>}
+                {userInfo.questionsAnswered.length === 0 && <div>No Questions Answered</div>}
+            </ul>
+
+            <h2>Tags Created by {user}</h2>
+            <div className="tags">
+                {userInfo.tags.map(t =>
+                    <ProfileTag
+                        key={t._id}
+                        tid={t._id}
+                        name={t.name}
+                        count={t.count}
+                        viewHome={viewHome}
+                    />)}
+            </div>
+            {userInfo.tags.length === 0 && <ul><div>No Tags Created</div></ul>}
+        </>)
+        }
     </div>
     )
 

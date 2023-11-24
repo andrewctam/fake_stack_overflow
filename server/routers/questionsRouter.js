@@ -77,6 +77,12 @@ router.post("/edit", async (req, res) => {
         return;
     }
 
+    if (question.asked_by !== user.username && !user.isAdmin) {
+        res.status(400).send("User does not own this question")
+        return;
+    }
+
+
     question.title = title;
     question.summary = summary;
     question.text = text;
@@ -287,7 +293,8 @@ router.post("/delete", async (req, res) => {
     }
     const payload = jwt.decode(token);
 
-    if (!payload || !payload.username || !(await User.findOne({ username: payload.username }))) {
+    let user;
+    if (!payload || !payload.username || !(user = await User.findOne({ username: payload.username }))) {
         res.status(400).send("User not found")
         return;
     }
@@ -305,7 +312,8 @@ router.post("/delete", async (req, res) => {
         return;
     }
 
-    if (q.asked_by !== payload.username) {
+
+    if (q.asked_by !== user.username && !user.isAdmin) {
         res.status(400).send("User does not own this question")
         return;
     }
