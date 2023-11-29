@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Question = require("../models/questions");
 const Answer = require("../models/answers");
+const Comment = require("../models/comments");
 const Tag = require("../models/tags");
 const mongoose = require("mongoose");
 const { privateKey, signOptions, publicKey, verifyOptions } = require('../verify');
@@ -206,11 +207,39 @@ router.post("/delete", async (req, res) => {
     }
 
     const user = await User.findOne({ _id: new mongoose.Types.ObjectId(payload.userId) });
-
     if (!user || !user.isAdmin) {
         res.status(400).send("User not authorized");
         return;
     }
+
+    const userId = new mongoose.Types.ObjectId(userIdDelete);
+    const questionsByUser = await Question.find({ asked_by: userId });
+    for (const q of questionsByUser) {
+        for (const a of q.answers) {
+            await Comment.deleteMany({ parent: a._id })
+        }
+
+        await Answer.deleteMany({ question: q._id });        
+        await Comment.deleteMany({ parent: q._id });
+    }
+    
+    await Question.deleteMany({ asked_by: userId });
+    await Answer.deleteMany({ ans_by: userId });
+    await Comment.deleteMany({ creator: userId });
+
+    const tagsByUser = await Tag.find({ creator: userId });
+    for (const t of tagsByUser) {
+        const questionsInUse = await Question.find({
+            tags: t._id
+        })
+
+        if (questionsInUse.some((e) => !e.asked_by.equals(userId))) {
+            continue;
+        } else {
+            await Tag.deleteOne({ _id: t._id });
+        }
+    }
+
 
     await User.deleteOne({ _id: userIdDelete });
     res.status(200).send("Specified user deleted");

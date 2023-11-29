@@ -60,7 +60,7 @@ router.post("/vote", async (req, res) => {
         res.status(400).send("User not found")
         return;
     }
-    if (user.reputation < 50) {
+    if (user.reputation < 50 && !user.isAdmin) {
         res.status(400).send(`Reputation (${user.reputation}) not high enough.`)
         return;
     }

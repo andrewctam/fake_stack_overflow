@@ -32,7 +32,7 @@ router.post("/create", async (req, res) => {
     for (const tagName of tags) {
         let tag = await Tag.findOne({ name: tagName });
         if (!tag) {
-            if (user.reputation < 50) {
+            if (user.reputation < 50 && !user.isAdmin) {
                 res.status(400).send(`Reputation (${user.reputation}) is not high enough to create a new tag '${tagName}'`)
                 return;
             }
@@ -95,11 +95,11 @@ router.post("/edit", async (req, res) => {
     for (const tagName of tags) {
         let tag = await Tag.findOne({ name: tagName });
         if (!tag) {
-            if (user.reputation < 50) {
+            if (user.reputation < 50 && !user.isAdmin) {
                 res.status(400).send(`Reputation (${user.reputation}) is not high enough to create a new tag '${tagName}'`)
                 return;
             }
-            tag = new Tag({ name: tagName, creator: user.username });
+            tag = new Tag({ name: tagName, creator: user._id });
             await tag.save();
         }
 
@@ -129,7 +129,7 @@ router.post("/vote", async (req, res) => {
         return;
     }
 
-    if (user.reputation < 50) {
+    if (user.reputation < 50 && !user.isAdmin) {
         res.status(400).send(`Reputation (${user.reputation}) not high enough.`)
         return;
     }
@@ -307,7 +307,7 @@ router.get("/all/:query?", async (req, res) => {
                 title: q.title,
                 summary: q.summary,
                 answers: q.answers,
-                lastAnswerTime: lastAnswerId ? answers[lastAnswerId].ans_date_time : "NONE",
+                lastAnswerTime: lastAnswerId ? answers[lastAnswerId]?.ans_date_time : "NONE",
                 text: q.text,
                 ask_date_time: q.ask_date_time,
                 asked_by: users[q.asked_by]?.username ?? "Deleted User",
