@@ -1,29 +1,49 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { config, isEmpty, verifyHyperlinks } from "../../utils";
 import QuestionInput from "./question-input";
 import axios from 'axios'
 
 export default function AskQuestion(props) {
-  const { viewHome, editingInfo } = props;
+  const { viewHome, editingId } = props;
 
-  const [title, setTitle] = useState(editingInfo?.title ?? "");
+  const [title, setTitle] = useState("");
   const [titleError, setTitleError] = useState("");
 
-  const [summary, setSummary] = useState(editingInfo?.summary ?? "");
+  const [summary, setSummary] = useState("");
   const [summaryError, setSummaryError] = useState("");
 
-  const [text, setText] = useState(editingInfo?.text ?? "");
+  const [text, setText] = useState("");
   const [textError, setTextError] = useState("");
 
-  const [tags, setTags] = useState(editingInfo?.tags.join(" ") ?? "");
+  const [tags, setTags] = useState("");
   const [tagsError, setTagsError] = useState("");
 
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const fetchQuestion = async () => {
+      const url = `http://localhost:8000/questions/q/${editingId}/false`;
+  
+      await axios.get(url, config)
+        .then((res) => {
+          console.log(res)
+          setTitle(res.data.title)
+          setSummary(res.data.summary)
+          setText(res.data.text)
+          setTags(res.data.tags.join(" "))
+  
+        })
+        .catch((err) => console.log(err));
+    }
+    if (editingId) {
+      fetchQuestion();
+    }
+  }, [])
+
   const deleteQuestion = async () => {
-    if (!editingInfo) return;
+    if (!editingId) return;
     const body = {
-      qid: editingInfo?._id
+      qid: editingId
     }
 
     const url = `http://localhost:8000/questions/delete`;
@@ -36,7 +56,7 @@ export default function AskQuestion(props) {
       });
   }
   const addQuestion = async () => {
-    const edit = editingInfo !== undefined;
+    const editing = editingId !== undefined;
 
     let error = false;
     setTitleError("");
@@ -105,13 +125,13 @@ export default function AskQuestion(props) {
     }
 
     const body = {
-      qid: edit ? editingInfo?._id : undefined,
+      qid: editing ? editingId: undefined,
       title,
       text,
       summary,
       tags: tagsArr,
     }
-    const url = `http://localhost:8000/questions/${edit ? "edit" : "create"}`;
+    const url = `http://localhost:8000/questions/${editing ? "edit" : "create"}`;
 
     await axios.post(url, body, config)
       .then(res => viewHome())
@@ -125,7 +145,7 @@ export default function AskQuestion(props) {
     
     <div className="questionForm">
       <div>
-        <h2>{editingInfo ? "Edit Question" : "Ask Question"}</h2>
+        <h2>{editingId ? "Edit Question" : "Ask Question"}</h2>
       </div>
       <QuestionInput
         title="Question Title*"
@@ -162,9 +182,9 @@ export default function AskQuestion(props) {
       />
       <div className="bottom">
         <button id="postQ" onClick={addQuestion}>
-          {editingInfo ? "Save Edits" : "Post Question"}
+          {editingId ? "Save Edits" : "Post Question"}
         </button>
-        {editingInfo &&
+        {!!editingId &&
           <button className="delQ" onClick={deleteQuestion}>
             Delete Question
           </button>

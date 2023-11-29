@@ -7,6 +7,8 @@ import AnswerQuestion from './questions/answer-question';
 import Tags from './tags';
 import Welcome from './welcome';
 import Profile from './profile/profile';
+import axios from 'axios';
+import { config } from '../utils';
 
 export default function FakeStackOverflow() {
   const [searchStr, setSearchStr] = useState("");
@@ -16,8 +18,9 @@ export default function FakeStackOverflow() {
   const [incrView, setIncrView] = useState(true);
 
   const [uid, setUid] = useState("")
+  const [logoutError, setLogoutError] = useState(false);
 
-  const [editingInfo, setEditingInfo] = useState(undefined);
+  const [editingId, setEditingId] = useState(undefined);
   const [userFirst, setUserFirst] = useState(undefined);
 
 
@@ -32,8 +35,16 @@ export default function FakeStackOverflow() {
     setPage("Home");
   }
 
-  const logout = () => {
-    setPage("Welcome");
+  const logout = async () => {
+    setLogoutError(false);
+    if (uid) {
+      const url = `http://localhost:8000/users/logout`
+      axios.post(url, {}, config)
+      .then((res) => setPage("Welcome"))
+      .catch((err) => setLogoutError(true))
+    } else {
+      setPage("Welcome")
+    }
   }
 
   const viewHome = (heading = undefined, searchResults = undefined) => {
@@ -50,9 +61,8 @@ export default function FakeStackOverflow() {
     setCurrentQid("");
     setPage("Profile");
   }
-  const editQuestion = (question) => {
-    setEditingInfo(question);
-    console.log(question)
+  const editQuestion = (qid) => {
+    setEditingId(qid);
     setPage("AskQuestion");
   }
   const viewQuestion = (qid, incrView = true) => {
@@ -69,7 +79,7 @@ export default function FakeStackOverflow() {
   }
   const viewAskQuestion = () => {
     setCurrentQid("");
-    setEditingInfo(undefined);
+    setEditingId(undefined);
     setPage("AskQuestion");
   }
   const viewAnswerQuestion = (qid) => {
@@ -93,6 +103,7 @@ export default function FakeStackOverflow() {
           <button onClick={logout}>
             {loggedIn ? "Logout" : "Back to Welcome"}
           </button>
+          {logoutError && <div className="loginError">Failed to logout</div>}
         </div>
       </div>
 
@@ -128,7 +139,7 @@ export default function FakeStackOverflow() {
         }
         {page === "AskQuestion" &&
           <AskQuestion
-            editingInfo={editingInfo}
+            editingId={editingId}
             viewHome={viewHome}
           />
         }

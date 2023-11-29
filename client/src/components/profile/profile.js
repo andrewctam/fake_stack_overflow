@@ -35,7 +35,7 @@ export default function Profile(props) {
     const sortQuestions = (a, b) => (a.ask_date_time < b.ask_date_time ? 1 : -1);
     return (<div className="profile">
         <div className="userStats">
-            <div>{userInfo.username}'s Profile</div>
+            <div>{`${userInfo.username}'s Profile${userInfo.isAdmin ? " (Admin)" : ""}`}</div>
             <div>Reputation: {userInfo.reputation}</div>
             <div>Member Since: {formatAskDate(new Date(userInfo.joinDate))}</div>
         </div>
@@ -45,6 +45,7 @@ export default function Profile(props) {
             <ul>
                 {userInfo.users.map((user) => (
                     <UserItem
+                        key={user._id}
                         username={user.username}
                         uid={user.userId}
                         setUser={setUser}
@@ -57,7 +58,7 @@ export default function Profile(props) {
             <h2>Questions Posted</h2>
             <ul id="questionsList" className="questionsList">
                 {userInfo.questions.sort(sortQuestions).map(q =>
-                    <li className="profileTitle" key={q._id} onClick={() => { editQuestion(q) }}>
+                    <li className="profileTitle" key={q._id} onClick={() => { editQuestion(q._id) }}>
                         {q.title}
                     </li>
                 )}

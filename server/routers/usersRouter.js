@@ -84,6 +84,13 @@ router.post("/login", async (req, res) => {
         .status(200).send(user._id)
 })
 
+router.post("/logout", async (req, res) => {
+    res.cookie('token', "", {
+        httpOnly: true, sameSite: 'lax'
+    })
+    .status(200).send("Logged out")
+})
+
 router.get("/profile/:userId", async (req, res) => {
     const token = req.cookies?.token
     if (!token || !jwt.verify(token, publicKey, verifyOptions)) {
