@@ -491,3 +491,8 @@ button {
 .pfError {
   margin: 10px;
 }
+
+.noComments {
+  text-align: center;
+  margin: 20px;
+}

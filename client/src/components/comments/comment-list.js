@@ -23,6 +23,7 @@ export default function CommentList(props) {
         <div className="comments">
             <h2>{parentType} Comments</h2>
             <div className="answersList">
+                {allComments.length === 0 && <div className="noComments">No comments yet</div>}
                 {allComments.slice((page) * 3, (page + 1) * 3).map(c =>
                     <CommentDisplay
                         key={"COMMENT" + c._id}

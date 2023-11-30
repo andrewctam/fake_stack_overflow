@@ -50,17 +50,17 @@ export default function ViewQuestion(props) {
       })
   }
 
-  
+
   if (!question) return;
-  
+
   const answers = question.answers.sort((a, b) => {
     if (userFirst !== undefined) {
       if (a.ans_by === userFirst && b.ans_by !== userFirst)
         return -1
-      
+
       if (b.ans_by === userFirst && a.ans_by !== userFirst)
         return 1
-    } 
+    }
 
     return a.ans_date_time < b.ans_date_time ? 1 : -1
   })
@@ -105,7 +105,7 @@ export default function ViewQuestion(props) {
           />
         )}
       </div>
-      
+
       {(answers.length > 5) &&
         (<div className="pageBtns">
           <button className="pageBtn"
@@ -125,7 +125,7 @@ export default function ViewQuestion(props) {
         id={qid}
       />
 
-      <button id="ansQ" onClick={() => viewAnswerQuestion(qid)}> Answer Question </button>
+      {loggedIn && <button id="ansQ" onClick={() => viewAnswerQuestion(qid)}> Answer Question </button>}
     </div>
   )
 }

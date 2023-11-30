@@ -42,8 +42,8 @@ router.post("/edit", async (req, res) => {
     const payload = jwt.decode(token);
 
     const { tid, newName } = req.body
-    
-    if (!tid || !newName || !payload ||!payload.userId || !mongoose.isValidObjectId(payload.userId)) {
+
+    if (!tid || !newName || !payload || !payload.userId || !mongoose.isValidObjectId(payload.userId)) {
         res.status(400).send("Missing params");
         return;
     }
@@ -53,18 +53,16 @@ router.post("/edit", async (req, res) => {
         return;
     }
 
-    const user = await User.findOne({_id: new mongoose.Types.ObjectId(payload.userId)})
+    const user = await User.findOne({ _id: new mongoose.Types.ObjectId(payload.userId) })
 
     if (!user || (!tag.creator.equals(user._id) && !user.isAdmin)) {
         res.status(400).send("Not the tag creator");
         return;
     }
 
-    const questionsInUse = await Question.find({
-        tags: tid
-    })
 
-    if (questionsInUse.some((e) => !e.asked_by.equals(tag.creator))) {
+    const questionsInUse = await Question.find({ asked_by: { $ne: tag.creator }, tags: tid });
+    if (questionsInUse.length > 0) {
         res.status(400).send("Tag in use by other users");
         return;
     }
@@ -98,29 +96,26 @@ router.post("/delete", async (req, res) => {
         return;
     }
 
-    const user = await User.findOne({_id: new mongoose.Types.ObjectId(payload.userId)})
+    const user = await User.findOne({ _id: new mongoose.Types.ObjectId(payload.userId) })
 
     if (!user || (!tag.creator.equals(user._id) && !user.isAdmin)) {
         res.status(400).send("Not the tag creator");
         return;
     }
 
-    const questionsInUse = await Question.find({
-        tags: tid
-    })
-    if (questionsInUse.some((e) => !e.asked_by.equals(tag.creator))) {
+    const questionsInUse = await Question.find({ asked_by: { $ne: tag.creator }, tags: tid });
+    if (questionsInUse.length > 0) {
         res.status(400).send("Tag in use by other users");
         return;
     }
 
-    questionsInUse.forEach(async (q) => {
-        q.tags.splice(q.tags.indexOf(tid), 1);
-        await q.save();
-    })
-    
+    await Question.updateMany(
+        { tags: tid },
+        { $pull: { tags: tid } }
+    );
+
     await Tag.deleteOne({ _id: tid });
     res.status(200).send("Success");
-
 })
 
 

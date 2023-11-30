@@ -88,7 +88,7 @@ router.post("/logout", async (req, res) => {
     res.cookie('token', "", {
         httpOnly: true, sameSite: 'lax'
     })
-    .status(200).send("Logged out")
+        .status(200).send("Logged out")
 })
 
 router.get("/profile/:userId", async (req, res) => {
@@ -226,11 +226,19 @@ router.post("/delete", async (req, res) => {
             await Comment.deleteMany({ parent: a._id })
         }
 
-        await Answer.deleteMany({ question: q._id });        
+        await Answer.deleteMany({ question: q._id });
         await Comment.deleteMany({ parent: q._id });
     }
-    
+
     await Question.deleteMany({ asked_by: userId });
+    const ansByUser = await Answer.find({ ans_by: userId });
+    for (const a of ansByUser) {
+        await Question.updateMany(
+            { answers: a._id },
+            { $pull: { answers: a._id } }
+        )
+    }
+
     await Answer.deleteMany({ ans_by: userId });
     await Comment.deleteMany({ creator: userId });
 
