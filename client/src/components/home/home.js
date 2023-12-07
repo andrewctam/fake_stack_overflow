@@ -22,7 +22,7 @@ export default function Home(props) {
           setQuestions(res.data)
         })
         .catch((err) => {
-          console.log(err)
+          console.log(err);
           setError("Error fetching questions. Please try again.")
         });
     }
@@ -70,6 +70,9 @@ export default function Home(props) {
   }, [filter, questions]);
 
   if (error.length > 0) {
+    if (searchStr) {
+      return <div className='noQs'>No Questions Found</div>
+    }
     return <div className="errorScreen">
       <h2>{error}</h2>
       <button onClick={backToWelcome}>Back To Welcome Page</button>

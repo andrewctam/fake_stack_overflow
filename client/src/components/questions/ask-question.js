@@ -52,7 +52,7 @@ export default function AskQuestion(props) {
       .then(res => viewHome())
       .catch(err => {
         console.log(err)
-        setError(err?.response?.data);
+        setError("Error communicating with server");
       });
   }
   const addQuestion = async () => {
@@ -137,7 +137,7 @@ export default function AskQuestion(props) {
       .then(res => viewHome())
       .catch(err => {
         console.log(err)
-        setError(err?.response?.data);
+        setError("Error communicating with server");
       });
   }
 

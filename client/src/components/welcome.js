@@ -61,7 +61,7 @@ export default function Welcome(props) {
             })
             .catch((err) => {
                 console.log(err)
-                setError(err?.response?.data)
+                setError("Error communicating with server");
             });
     }
 
@@ -71,6 +71,10 @@ export default function Welcome(props) {
         let error = false;
         if (!email) {
             setEmailError("Email field is empty")
+            error = true;
+        }
+        if (!email.match(/^\S+@\S+\.\S+$/)) {
+            setEmailError("Invalid email format")
             error = true;
         }
         if (!username) {
@@ -84,6 +88,17 @@ export default function Welcome(props) {
         }
         if (password !== confirmPassword) {
             setPasswordError("Passwords do not match");
+            error = true;
+        }
+
+        if(password === username) {
+            setPasswordError("Password contains username");
+            error = true;
+        }
+
+        const at = email.indexOf("@")
+        if(at < 0 || password === email.substring(0, at)) {
+            setPasswordError("Password contains email id");
             error = true;
         }
 
@@ -107,7 +122,7 @@ export default function Welcome(props) {
             })
             .catch((err) => {
                 console.log(err)
-                setError(err?.response?.data)
+                setError("Error communicating with server");
             });
     }
 

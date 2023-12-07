@@ -21,7 +21,7 @@ export default function Profile(props) {
                     setUserInfo(res.data)
                 })
                 .catch((err) => {
-                    setError(err?.response?.data)
+                    setError("Error communicating with server");
                     console.log(err)
                 });
         }

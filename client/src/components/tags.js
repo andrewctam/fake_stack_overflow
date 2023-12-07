@@ -5,22 +5,29 @@ import axios from "axios"
 export default function Tags(props) {
   const { viewHome, viewAskQuestion, loggedIn } = props;
   const [tags, setTags] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    setError("");
     const getTags = async () => {
       const url = "http://localhost:8000/tags/all";
   
       await axios.get(url, config)
         .then(res => setTags(res.data))
-        .catch(err => console.log(err));
+        .catch(err => {
+          console.log(err)
+          setError("Error communicating with server");
+        });
     }
 
     getTags();
-    
+
   }, [])
 
   
-
+  if (error) {
+    return <div className='noQs'>{error}</div>
+  }
   if (!tags) return;
 
   const filterTag = (tag) => {

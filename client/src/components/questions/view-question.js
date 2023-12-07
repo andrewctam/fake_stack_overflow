@@ -10,6 +10,7 @@ export default function ViewQuestion(props) {
 
   const [page, setPage] = useState(0);
   const [voteError, setVoteError] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const getQuestion = async () => {
@@ -19,7 +20,10 @@ export default function ViewQuestion(props) {
           console.log(res)
           setQuestion(res.data)
         })
-        .catch((err) => console.log(err));
+        .catch((err) => {
+          console.log(err)
+          setError("Error communicating with server");
+        });
     }
 
     getQuestion();
@@ -50,6 +54,11 @@ export default function ViewQuestion(props) {
       })
   }
 
+
+  
+  if (error) {
+    return <div className='noQs'>{error}</div>
+  }
 
   if (!question) return;
 

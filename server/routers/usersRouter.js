@@ -22,23 +22,21 @@ router.post("/register", async (req, res) => {
         return;
     }
 
-    if (password.includes(username)) {
+    if (password === username) {
         res.status(400).send("Password includes username");
         return;
     }
 
     const at = email.indexOf("@")
-    if (at < 0 || password.substring(0, at).includes(email)) {
-        res.status(400).send("Password includes email");
+    if (at < 0 || email.substring(0, at) === password) {
+        res.status(400).send("Password includes email id");
         return;
     }
 
-    const existingUser = await User.findOne({
-        $or: [{ username: username }, { email: email }]
-    })
+    const existingUser = await User.findOne({ email })
 
     if (existingUser) {
-        res.status(400).send("Username already taken");
+        res.status(400).send("Email already taken");
         return;
     }
 

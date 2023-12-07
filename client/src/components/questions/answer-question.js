@@ -38,7 +38,7 @@ export default function AnswerQuestion(props) {
     await axios.post(url, body, config)
       .then(res => viewQuestion(qid, false))
       .catch(err => {
-        setError(err?.response?.data)
+        setError("Error communicating with server");
         console.log(err)
       });
   }
