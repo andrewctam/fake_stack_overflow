@@ -496,3 +496,9 @@ button {
   text-align: center;
   margin: 20px;
 }
+
+.profileLink {
+  cursor: pointer;
+  color: rgb(124, 124, 231);
+  margin-top: 10px;
+}

@@ -23,7 +23,7 @@ export default function UserItem(props) {
             })
             .catch((err) => {
                 console.log(err)
-                setError("Error communicating with server");
+                setError(err?.response?.data ?? "Error communicating with server");
             });
     }
     if (deleted) {

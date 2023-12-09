@@ -22,7 +22,7 @@ export default function ViewQuestion(props) {
         })
         .catch((err) => {
           console.log(err)
-          setError("Error communicating with server");
+          setError(err?.response?.data ?? "Error communicating with server");
         });
     }
 
@@ -64,10 +64,10 @@ export default function ViewQuestion(props) {
 
   const answers = question.answers.sort((a, b) => {
     if (userFirst !== undefined) {
-      if (a.ans_by === userFirst && b.ans_by !== userFirst)
+      if (a.ans_by_id === userFirst && b.ans_by_id !== userFirst)
         return -1
 
-      if (b.ans_by === userFirst && a.ans_by !== userFirst)
+      if (b.ans_by_id === userFirst && a.ans_by_id !== userFirst)
         return 1
     }
 

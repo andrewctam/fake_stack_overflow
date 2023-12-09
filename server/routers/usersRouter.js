@@ -153,9 +153,22 @@ router.get("/profile/:userId", async (req, res) => {
 
     const qIds = (await Answer.find({ ans_by: user._id }))
         .map(a => a.question);
-    const questionsAnswered = await Question.find({
-        _id: { $in: qIds }
-    })
+
+    const users = (await User.find({})).reduce((acc, cur) => {
+        acc[cur._id] = cur
+        return acc;
+    }, {})
+
+
+
+    const questionsAnswered = (await Question.find({ _id: { $in: qIds } }))
+        .map(q => {
+            const obj = q.toObject();
+            obj.asked_by = users[obj.asked_by]?.username ?? "Deleted User";
+            obj.tags = obj.tags.map(t => tags[t]);
+
+            return obj;
+        }, {})
 
     const userTags = await Tag.find({
         creator: user._id

@@ -181,6 +181,7 @@ router.get("/q/:id/:incrView?", async (req, res) => {
     const answers = (await Answer.find({})).reduce((acc, cur) => {
         const obj = cur.toObject();
         obj.comments = comments.filter((c) => c.parent.equals(cur._id));
+        obj["ans_by_id"] = obj.ans_by
         obj.ans_by = users[obj.ans_by]?.username ?? "Deleted User";
         acc[cur._id] = obj
         return acc;

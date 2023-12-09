@@ -112,7 +112,7 @@ export default function Home(props) {
         {sortedQuestions.slice(page * 5, (page + 1) * 5).map(q =>
           <HomeQuestion
             key={"QUESTION" + q._id}
-            viewQuestion={viewQuestion}
+            viewQuestion={() => viewQuestion(q._id)}
             q={q}
           />
         )}

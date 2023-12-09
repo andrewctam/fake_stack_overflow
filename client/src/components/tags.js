@@ -16,7 +16,7 @@ export default function Tags(props) {
         .then(res => setTags(res.data))
         .catch(err => {
           console.log(err)
-          setError("Error communicating with server");
+          setError(err?.response?.data ?? "Error communicating with server");
         });
     }
 

@@ -12,7 +12,7 @@ export default function HomeQuestion(props) {
       </div>
 
       <div className="info">
-        <h2 id={q._id} onClick={() => viewQuestion(q._id)}> {q.title} </h2>
+        <h2 id={q._id} onClick={() => viewQuestion()}> {q.title} </h2>
         <div>{q.summary}</div>
         <div>
           {q.tags.map(name =>
