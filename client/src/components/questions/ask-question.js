@@ -38,7 +38,7 @@ export default function AskQuestion(props) {
     if (editingId) {
       fetchQuestion();
     }
-  }, [])
+  }, [editingId])
 
   const deleteQuestion = async () => {
     if (!editingId) return;
