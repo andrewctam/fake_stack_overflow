@@ -69,20 +69,10 @@ const createPost = async (user, title, summary, text, tags) => {
     console.log(`Post '${title}' created by ${user.username}`)
     return q;
 }
-const clear = async () => {
-    await User.deleteMany({});
-    await Tag.deleteMany({});
-    await Answer.deleteMany({});
-    await Comment.deleteMany({});
-    await Question.deleteMany({});
 
-    console.log("Cleared DB");
-}
 
 
 const init = async () => {
-    await clear();
-
     await createUser(adminUsername, adminPassword, true, 0);
 
     const username1 = adminUsername === "andrew" ? "androo" : "andrew";
