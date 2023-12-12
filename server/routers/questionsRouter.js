@@ -166,6 +166,11 @@ router.get("/q/:id/:incrView?", async (req, res) => {
     }
 
     const q = await Question.findOne({ _id: new mongoose.Types.ObjectId(id) })
+    if (!q) {
+        res.status(400).send("Invalid ID")
+        return;
+    }
+
     const tags = (await Tag.find({})).reduce((acc, cur) => {
         acc[cur._id] = cur.name
         return acc;

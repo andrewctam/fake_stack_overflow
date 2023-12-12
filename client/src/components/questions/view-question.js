@@ -55,7 +55,7 @@ export default function ViewQuestion(props) {
   }
 
 
-  
+
   if (error) {
     return <div className='noQs'>{error}</div>
   }
@@ -98,6 +98,12 @@ export default function ViewQuestion(props) {
             <span className="name">{question.asked_by}</span> asked {formatAskDate(new Date(question.ask_date_time))}
           </div>
         </div>
+        <CommentList
+          comments={question.comments}
+          parentType="Question"
+          loggedIn={loggedIn}
+          id={qid}
+        />
       </div>
 
       <div className="answersList">
@@ -127,12 +133,6 @@ export default function ViewQuestion(props) {
             Next</button>
         </div>)}
 
-      <CommentList
-        comments={question.comments}
-        parentType="Question"
-        loggedIn={loggedIn}
-        id={qid}
-      />
 
       {loggedIn && <button id="ansQ" onClick={() => viewAnswerQuestion(qid)}> Answer Question </button>}
     </div>
